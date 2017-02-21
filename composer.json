@@ -1,0 +1,32 @@
+{
+    "name": "uskur/omnipay-docdata-payments",
+    "type": "library",
+    "description": "Docdata Payments support for Omnipay payment processing library",
+    "keywords": [
+        "docdata",
+        "gateway",
+        "merchant",
+        "omnipay",
+        "pay",
+        "payment",
+        "purchase",
+        "soap"
+    ],
+    "homepage": "https://github.com/Uskur/omnipay-docdata-payments",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Burak USGURLU",
+            "email": "burak@uskur.com.tr"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Omnipay\\DocdataPayments\\" : "src/" }
+    },
+    "require": {
+        "omnipay/common": "~2.0"
+    },
+    "require-dev": {
+        "omnipay/tests": "~2.0"
+    }
+}
