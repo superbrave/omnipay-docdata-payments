@@ -327,8 +327,8 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
 
         // Replace this line with the correct function.
         $response = $this->runTransaction($soapClient, $data);
-
-        return $this->response = new CreateResponse($this, $response);
+        $class= $this->responseName;
+        return $this->response = new $class($this, $response);
     }
 
     /**

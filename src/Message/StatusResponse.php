@@ -6,9 +6,9 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Create Request Response
+ * Status Request Response
  */
-class CreateResponse extends AbstractResponse implements RedirectResponseInterface
+class StatusResponse extends AbstractResponse implements RedirectResponseInterface
 {
     protected $livePaymentMenu = 'https://secure.docdatapayments.com/ps/menu';
     protected $testPaymentMenu = 'https://test.docdatapayments.com/ps/menu';

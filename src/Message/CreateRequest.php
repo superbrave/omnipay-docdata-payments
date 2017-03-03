@@ -52,7 +52,7 @@ class CreateRequest extends SoapAbstractRequest
         $data['paymentPreferences']['profile'] = $this->getPaymentProfile();
         $data['paymentPreferences']['numberOfDaysToPay'] = $this->getPaymentDays();
         $data['merchantOrderReference'] = $this->getTransactionId();
-        $data['totalGrossAmount'] = array('_' => $this->getAmount(),'currency' => $this->getCurrency());
+        $data['totalGrossAmount'] = array('_' => $this->getAmountInteger(),'currency' => $this->getCurrency());
 
         $data['shopper']['id'] = $this->getShopperId();
         $data['shopper']['name']['title'] = $card->getTitle();
@@ -111,7 +111,7 @@ class CreateRequest extends SoapAbstractRequest
      */
     protected function runTransaction($soapClient, $data)
     {
-        $this->responseName = 'CreateResponse';
+        $this->responseName = '\Omnipay\DocdataPayments\Message\CreateResponse';
         return $soapClient->create($data);
     }
 }

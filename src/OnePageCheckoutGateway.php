@@ -250,7 +250,7 @@ class OnePageCheckoutGateway extends AbstractGateway
      */
     public function acceptNotification(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\CreateRequest', $parameters);
+        return $this->createRequest('\Omnipay\DocdataPayments\Message\StatusRequest', $parameters);
     }
 
     /**
@@ -261,7 +261,7 @@ class OnePageCheckoutGateway extends AbstractGateway
      */
     public function capture(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\SoapCaptureRequest', $parameters);
+        return $this->createRequest('\Omnipay\DocdataPayments\Message\CaptureRequest', $parameters);
     }
 
     /**
