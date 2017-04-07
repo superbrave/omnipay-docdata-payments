@@ -34,6 +34,7 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
         return $soapClient->status($data);
     }
     
+    
     /**
      * Was the transaction successful?
      *
@@ -41,7 +42,10 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
      * or {@see #STATUS_FAILED}.
      */
     public function getTransactionStatus(){
-        
+        if(isset($this->data->statusSuccess)) {
+            return true;
+        }
+        return STATUS_FAILED;
     }
     
     /**

@@ -8,80 +8,92 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 /**
  * Status Request Response
  */
-class StatusResponse extends AbstractResponse implements RedirectResponseInterface
+class StatusResponse extends AbstractResponse
 {
-    protected $livePaymentMenu = 'https://secure.docdatapayments.com/ps/menu';
-    protected $testPaymentMenu = 'https://test.docdatapayments.com/ps/menu';
-
+    
+    //get the payment id(s) to be captured
+    public function getTransactionReference(){
+        return $this->data->statusSuccess->report->payment->id;
+    }
+    
     public function isSuccessful()
     {
-        if(isset($this->data->createSuccess) && $this->data->createSuccess->success->code === 'SUCCESS') return true;
+        if(isset($this->data->statusSuccess) && $this->data->statusSuccess->success->code === 'SUCCESS'){
+            if(!isset($this->data->statusSuccess->report->payment)){
+                return false;
+            }
+            elseif(is_array($this->data->statusSuccess->report->payment)) {
+                foreach($this->data->statusSuccess->report->payment as $payment){
+                    if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'PAID') return true;
+                    elseif($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') return true;
+                }
+            }
+            else{
+                $payment = $this->data->statusSuccess->report->payment;
+                if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'PAID') return true;
+                elseif($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') return true;
+            }
+        }
         return false;
     }
     
-    public function getMessage()
+    /**
+     * Is the response successful?
+     *
+     * @return boolean
+     */
+    public function isPending()
     {
-        if($this->isSuccessful()) return $this->data->createSuccess->success->_;
-        else return $this->data->createErrors->error->_;
-    }
-
-    public function isRedirect()
-    {
-        return $this->isSuccessful();
-    }
-
-    public function getRedirectUrl()
-    {
-        return $this->getPaymentMenu().'?'.http_build_query($this->getRedirectQueryParameters(), '', '&');
-    }
-
-    public function getTransactionReference()
-    {
-        return isset($this->data->createSuccess->key) ? $this->data->createSuccess->key : null;
+        if(!isset($this->data->statusSuccess->report->payment)){
+            return true;
+        }
+        elseif(is_array($this->data->statusSuccess->report->payment)) {
+            foreach($this->data->statusSuccess->report->payment as $payment){
+                if($payment->authorization->status == 'CANCELED') continue;
+                if($payment->paymentMethod == 'BANK_TRANSFER'){
+                    if($payment->authorization->status == 'AUTHORIZED') return true;
+                    elseif($payment->authorization->status == 'PAID') return false;
+                }
+            }
+        }
+        else{
+            $payment = $this->data->statusSuccess->report->payment;
+            if($payment->authorization->status == 'CANCELED') return false;
+            if($payment->paymentMethod == 'BANK_TRANSFER'){
+                if($payment->authorization->status == 'AUTHORIZED') return true;
+                elseif($payment->authorization->status == 'PAID') return false;
+            }
+        }
     }
     
-    public function getTransactionId()
-    {
-        return !empty($this->getRequest()->getTransactionId()) ? $this->getRequest()->getTransactionId() : null;
-    }
-
-    public function getRedirectMethod()
-    {
-        return 'GET';
-    }
-
-    public function getRedirectData()
-    {
-        return null;
-    }
-
     /**
-     * 1 payment_cluster_key yes This is the value that is returned by the create paymentOrder call as described in Prerequisites.
-     * 2 merchant_name Yes This is your merchant name as used in all Docdata Payments communication.
-     * 3 return_url_success No The URL that your client will be redirected to after a successful payment.
-     * 4 return_url_canceled No The URL that your client will be redirected to after a payment has been canceled.
-     * 5 return_url_pending No The URL that your client will be redirected to after the payment menu was accessed for a pending payment.
-     * 6 return_url_error No The URL that your client will be redirected to after an error has occurred.
-     * 7 client_language No The 2-letter ISO language code, will diplay the menu in the language you have specified.
-     * 
-     * @author Burak USGURLU <burak@uskur.com.tr>
-     * @return string[]|NULL[]
+     * Is the transaction cancelled by the user?
+     *
+     * @return boolean
      */
-    protected function getRedirectQueryParameters()
+    public function isCancelled()
     {
-        return array(
-            'payment_cluster_key' => $this->getTransactionReference(),
-            'merchant_name' => $this->getRequest()->getMerchantName(),
-            'return_url_success' =>$this->getRequest()->getReturnUrl(),
-            'return_url_canceled'=>$this->getRequest()->getCancelUrl(),
-            'return_url_pending'=>$this->getRequest()->getPendingUrl(),
-            'return_url_error'=>$this->getRequest()->getCancelUrl(),
-            'client_language'=>$this->getRequest()->getLanguage(),
-        );
+        $canceled = false;
+        if(is_array($this->data->statusSuccess->report->payment)) {
+            foreach($this->data->statusSuccess->report->payment as $payment){
+                if($payment->authorization->status == 'CANCELED'){
+                    $canceled = true;
+                }
+                else{
+                    $canceled = false;
+                }
+            }
+        }
+        else{
+            $payment = $this->data->statusSuccess->report->payment;
+            if($payment->authorization->status == 'CANCELED'){
+                $canceled = true;
+            }
+            else{
+                $canceled = false;
+            }
+        }
+        return $canceled;
     }
 
-    protected function getPaymentMenu()
-    {
-        return $this->getRequest()->getTestMode() ? $this->testPaymentMenu : $this->livePaymentMenu;
-    }
 }
