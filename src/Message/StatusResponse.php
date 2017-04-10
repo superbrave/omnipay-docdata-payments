@@ -74,7 +74,10 @@ class StatusResponse extends AbstractResponse
     public function isCancelled()
     {
         $canceled = false;
-        if(is_array($this->data->statusSuccess->report->payment)) {
+        if(!isset($this->data->statusSuccess->report->payment)){
+            $canceled = false;
+        }
+        elseif(is_array($this->data->statusSuccess->report->payment)) {
             foreach($this->data->statusSuccess->report->payment as $payment){
                 if($payment->authorization->status == 'CANCELED'){
                     $canceled = true;
