@@ -272,7 +272,7 @@ class OnePageCheckoutGateway extends AbstractGateway
      */
     public function refund(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\SoapRefundRequest', $parameters);
+        return $this->createRequest('\Omnipay\DocdataPayments\Message\RefundRequest', $parameters);
     }
 
     /**
