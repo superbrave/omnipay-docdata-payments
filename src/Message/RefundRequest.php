@@ -28,6 +28,6 @@ class RefundRequest extends SoapAbstractRequest
     protected function runTransaction($soapClient, $data)
     {
         $this->responseName = '\Omnipay\DocdataPayments\Message\RefundResponse';
-        return $soapClient->create($data);
+        return $soapClient->refund($data);
     }
 }
