@@ -43,6 +43,7 @@ class RefundRequest extends SoapAbstractRequest
         if(is_null($data['paymentId'])) {
             throw new InvalidRequestException("No payment to refund.");
         }
+        
         $this->responseName = '\Omnipay\DocdataPayments\Message\RefundResponse';
         return $soapClient->refund($data);
     }
