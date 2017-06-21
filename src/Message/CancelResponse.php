@@ -6,14 +6,14 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Refund Request Response
+ * Cancel Request Response
  */
-class RefundResponse extends AbstractResponse
+class CancelResponse extends AbstractResponse
 {
     
     public function isSuccessful()
     {
-        if(isset($this->data->refundResponse) && $this->data->refundSuccess->success->code === 'SUCCESS'){
+        if(isset($this->data->cancelSuccess) && $this->data->cancelSuccess->success->code === 'SUCCESS'){
             return true;
         }
         return false;

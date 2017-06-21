@@ -98,5 +98,13 @@ class StatusResponse extends AbstractResponse
         }
         return $canceled;
     }
+    
+    public function isCaptured()
+    {
+        if($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
+            return true;
+        }
+        return false;
+    }
 
 }

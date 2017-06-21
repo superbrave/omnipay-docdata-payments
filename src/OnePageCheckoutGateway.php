@@ -283,7 +283,7 @@ class OnePageCheckoutGateway extends AbstractGateway
      */
     public function void(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\SoapVoidRequest', $parameters);
+        return $this->createRequest('\Omnipay\DocdataPayments\Message\CancelRequest', $parameters);
     }
     
     public function completeAuthorize(array $parameters = array())
