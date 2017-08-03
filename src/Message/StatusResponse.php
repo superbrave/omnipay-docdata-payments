@@ -24,13 +24,20 @@ class StatusResponse extends AbstractResponse
             }
             elseif(is_array($this->data->statusSuccess->report->payment)) {
                 foreach($this->data->statusSuccess->report->payment as $payment){
-                    if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'PAID') return true;
+                    
+                    if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') {
+                        if($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) return true;
+                        return false;
+                    }
                     elseif($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') return true;
                 }
             }
             else{
                 $payment = $this->data->statusSuccess->report->payment;
-                if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'PAID') return true;
+                if($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED'){
+                    if($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) return true;
+                    return false;
+                }
                 elseif($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') return true;
             }
         }
@@ -51,8 +58,10 @@ class StatusResponse extends AbstractResponse
             foreach($this->data->statusSuccess->report->payment as $payment){
                 if($payment->authorization->status == 'CANCELED') continue;
                 if($payment->paymentMethod == 'BANK_TRANSFER'){
-                    if($payment->authorization->status == 'AUTHORIZED') return true;
-                    elseif($payment->authorization->status == 'PAID') return false;
+                    if($payment->authorization->status == 'AUTHORIZED') {
+                        if($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) return false;
+                        return true;
+                    }
                 }
             }
         }
@@ -60,8 +69,10 @@ class StatusResponse extends AbstractResponse
             $payment = $this->data->statusSuccess->report->payment;
             if($payment->authorization->status == 'CANCELED') return false;
             if($payment->paymentMethod == 'BANK_TRANSFER'){
-                if($payment->authorization->status == 'AUTHORIZED') return true;
-                elseif($payment->authorization->status == 'PAID') return false;
+                if($payment->authorization->status == 'AUTHORIZED'){
+                    if($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) return false;
+                    return true;
+                }
             }
         }
     }
