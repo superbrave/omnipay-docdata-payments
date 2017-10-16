@@ -295,4 +295,9 @@ class OnePageCheckoutGateway extends AbstractGateway
     {
         return $this->createRequest('\Omnipay\DocdataPayments\Message\StatusRequest', $parameters);
     }
+    
+    public function extendedStatus(array $parameters = array())
+    {
+        return $this->createRequest('\Omnipay\DocdataPayments\Message\ExtendedStatusRequest', $parameters);
+    }
 }
