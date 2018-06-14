@@ -173,10 +173,11 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     public function getLanguage()
     {
         if(empty($this->getParameter('language'))) return 'en';
-        if (!preg_match('/^[a-z]{2}$/', $this->getParameter('language'))) {
+        $language =  strtolower($this->getParameter('language'));
+        if (!preg_match('/^[a-z]{2}$/', $language)) {
             throw new InvalidRequestException('Language must be an ISO 639-1:2002 Part 1: Alpha-2 Language Codes (lowercase) two-digit code.');
         }
-        return $this->getParameter('language');
+        return $language;
     }
     
     public function setLanguage($value)
