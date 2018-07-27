@@ -2,12 +2,12 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
-use Guzzle\Http\ClientInterface;
 use Omnipay\Common\Message\AbstractRequest as OmnipayAbstractRequest;
 use SoapClient;
 use SoapFault;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Omnipay\Common\Exception\InvalidRequestException;
+use Omnipay\Common\Http\ClientInterface;
 
 /**
  * Docdata Paymets SOAP gateway Abstract Request
