@@ -2,9 +2,16 @@
 
 namespace Omnipay\DocdataPayments;
 
-use Guzzle\Http\ClientInterface;
+use Omnipay\Common\Http\ClientInterface;
+use Omnipay\Common\Message\RequestInterface;
+use Omnipay\DocdataPayments\Message\CancelRequest;
+use Omnipay\DocdataPayments\Message\CaptureRequest;
+use Omnipay\DocdataPayments\Message\CreateRequest;
+use Omnipay\DocdataPayments\Message\ExtendedStatusRequest;
+use Omnipay\DocdataPayments\Message\RefundRequest;
 use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
 use Omnipay\Common\AbstractGateway;
+use Omnipay\DocdataPayments\Message\StatusRequest;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
 /**
@@ -99,7 +106,9 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
  */
 class WebdirectGateway extends AbstractGateway
 {
-    /** @var \SoapClient */
+    /**
+     * @var \SoapClient
+     */
     protected $soapClient;
 
     /**
@@ -144,8 +153,10 @@ class WebdirectGateway extends AbstractGateway
      * </code>
      *
      * @see \Omnipay\Common\Message\AbstractRequest
+     *
      * @param string $class The request class name
-     * @param array $parameters
+     * @param array  $parameters
+     *
      * @return \Omnipay\Common\Message\AbstractRequest
      */
     protected function createRequest($class, array $parameters)
@@ -188,7 +199,8 @@ class WebdirectGateway extends AbstractGateway
      * Use the Merchant ID assigned by Allied wallet.
      *
      * @param string $value
-     * @return SoapGateway implements a fluent interface
+     *
+     * @return WebdirectGateway implements a fluent interface
      */
     public function setMerchantName($value)
     {
@@ -213,7 +225,8 @@ class WebdirectGateway extends AbstractGateway
      * Use the Site ID assigned by Allied wallet.
      *
      * @param string $value
-     * @return SoapGateway implements a fluent interface
+     *
+     * @return WebdirectGateway implements a fluent interface
      */
     public function setMerchantPassword($value)
     {
@@ -224,80 +237,104 @@ class WebdirectGateway extends AbstractGateway
      * Create a purchase request
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapPurchaseRequest
      */
     public function purchase(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\SoapPurchaseRequest', $parameters);
+        // TODO: Implement purchase() method.
     }
 
     /**
      * Create an authorize request
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapAuthorizeRequest
+     *
+     * @return RequestInterface
      */
     public function authorize(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\CreateRequest', $parameters);
+        return $this->createRequest(CreateRequest::class, $parameters);
     }
-    
+
     /**
      * Handle notification callback.
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapAuthorizeRequest
+     *
+     * @return RequestInterface
      */
     public function acceptNotification(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\StatusRequest', $parameters);
+        return $this->createRequest(StatusRequest::class, $parameters);
     }
 
     /**
      * Create a capture request
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapCaptureRequest
+     *
+     * @return RequestInterface
      */
     public function capture(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\CaptureRequest', $parameters);
+        return $this->createRequest(CaptureRequest::class, $parameters);
     }
 
     /**
      * Create a refund request
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapRefundRequest
+     *
+     * @return RequestInterface
      */
     public function refund(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\RefundRequest', $parameters);
+        return $this->createRequest(RefundRequest::class, $parameters);
     }
 
     /**
      * Create a void request
      *
      * @param array $parameters
-     * @return \Omnipay\DocdataPayments\Message\SoapVoidRequest
+     *
+     * @return RequestInterface
      */
     public function void(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\CancelRequest', $parameters);
+        return $this->createRequest(CancelRequest::class, $parameters);
     }
-    
+
     public function completeAuthorize(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\CaptureRequest', $parameters);
+        return $this->createRequest(CaptureRequest::class, $parameters);
     }
-    
+
     public function status(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\StatusRequest', $parameters);
+        return $this->createRequest(StatusRequest::class, $parameters);
     }
-    
+
     public function extendedStatus(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\DocdataPayments\Message\ExtendedStatusRequest', $parameters);
+        return $this->createRequest(ExtendedStatusRequest::class, $parameters);
+    }
+
+    public function completePurchase(array $options = array())
+    {
+        // TODO: Implement completePurchase() method.
+    }
+
+    public function createCard(array $options = array())
+    {
+        // TODO: Implement createCard() method.
+    }
+
+    public function updateCard(array $options = array())
+    {
+        // TODO: Implement updateCard() method.
+    }
+
+    public function deleteCard(array $options = array())
+    {
+        // TODO: Implement deleteCard() method.
     }
 }
