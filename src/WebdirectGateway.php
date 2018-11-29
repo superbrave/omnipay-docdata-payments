@@ -97,7 +97,7 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
  * * Card Tokens are not supported.
  * * Voids of captured transactions are not supported, only voiding authorize transactions is supported.
  */
-class OnePageCheckoutGateway extends AbstractGateway
+class WebdirectGateway extends AbstractGateway
 {
     /** @var \SoapClient */
     protected $soapClient;
