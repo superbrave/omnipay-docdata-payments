@@ -23,15 +23,17 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
-     * @param array $data
+     * @param \SoapClient $soapClient
+     * @param array       $data
+     *
      * @return array
-     * @throws \Exception
+     *
+     * @throws \SoapFault
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     {
         $this->responseName = '\Omnipay\DocdataPayments\Message\StatusResponse';
-        return $soapClient->status($data);
+        return $soapClient->__soapCall('status', $data);
     }
     
     
@@ -41,11 +43,12 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
      * @return string Transaction status, one of {@see STATUS_COMPLETED}, {@see #STATUS_PENDING},
      * or {@see #STATUS_FAILED}.
      */
-    public function getTransactionStatus(){
+    public function getTransactionStatus()
+    {
         if(isset($this->data->statusSuccess)) {
             return true;
         }
-        return STATUS_FAILED;
+        return self::STATUS_FAILED;
     }
     
     /**
@@ -53,7 +56,8 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
      *
      * @return string A response message from the payment gateway
      */
-    public function getMessage(){
-        
+    public function getMessage()
+    {
+        //TODO is this OK?
     }
 }

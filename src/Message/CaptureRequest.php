@@ -10,22 +10,17 @@ use Omnipay\Common\CreditCard;
  */
 class CaptureRequest extends SoapAbstractRequest
 {
-
-   
-    public function getData()
-    {
-        $data = parent::getData();
-        return $data;
-    }
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
+     * @param \SoapClient $soapClient
      * @param array $data
+     *
      * @return array
-     * @throws \Exception
+     *
+     * @throws \SoapFault
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
@@ -44,6 +39,6 @@ class CaptureRequest extends SoapAbstractRequest
         }
         $data['amount'] = array('_' => $status->statusSuccess->report->payment->authorization->amount->_,'currency' => (string)$status->statusSuccess->report->payment->authorization->amount->currency);
         $this->responseName = '\Omnipay\DocdataPayments\Message\CaptureResponse';
-        return $soapClient->capture($data);
+        return $soapClient->__soapCall('capture', $data);
     }
 }

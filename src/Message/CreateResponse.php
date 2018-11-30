@@ -69,14 +69,19 @@ class CreateResponse extends AbstractResponse implements RedirectResponseInterfa
      */
     protected function getRedirectQueryParameters()
     {
+        /**
+         * @var CreateRequest $request
+         */
+        $request = $this->getRequest();
+
         return array(
             'payment_cluster_key' => $this->getTransactionReference(),
-            'merchant_name' => $this->getRequest()->getMerchantName(),
-            'return_url_success' =>$this->getRequest()->getReturnUrl(),
-            'return_url_canceled'=>$this->getRequest()->getCancelUrl(),
-            'return_url_pending'=>$this->getRequest()->getPendingUrl(),
-            'return_url_error'=>$this->getRequest()->getCancelUrl(),
-            'client_language'=>$this->getRequest()->getLanguage(),
+            'merchant_name' => $request->getMerchantName(),
+            'return_url_success' => $request->getReturnUrl(),
+            'return_url_canceled' => $request->getCancelUrl(),
+            'return_url_pending' => $request->getPendingUrl(),
+            'return_url_error' => $request->getCancelUrl(),
+            'client_language' => $request->getLanguage(),
         );
     }
 

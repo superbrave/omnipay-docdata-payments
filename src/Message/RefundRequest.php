@@ -20,12 +20,14 @@ class RefundRequest extends SoapAbstractRequest
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
+     * @param \SoapClient $soapClient
      * @param array $data
+     *
      * @return array
+     *
      * @throws \Exception
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     { 
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
@@ -40,11 +42,11 @@ class RefundRequest extends SoapAbstractRequest
         elseif($status->statusSuccess->report->payment->authorization->status == 'AUTHORIZED'){
             $data['paymentId'] = $status->statusSuccess->report->payment->id;
         }
-        if(is_null($data['paymentId'])) {
+        if($data['paymentId'] === null) {
             throw new InvalidRequestException("No payment to refund.");
         }
         
-        $this->responseName = '\Omnipay\DocdataPayments\Message\RefundResponse';
-        return $soapClient->refund($data);
+        $this->responseName = RefundResponse::class;
+        return $soapClient->__soapCall('refund', $data);
     }
 }

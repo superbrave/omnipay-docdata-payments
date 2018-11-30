@@ -10,24 +10,20 @@ use Omnipay\Common\CreditCard;
  */
 class CancelRequest extends SoapAbstractRequest
 {
-    
-    public function getData()
-    {
-        $data = parent::getData();
-        return $data;
-    }
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
-     * @param array $data
+     * @param \SoapClient $soapClient
+     * @param array       $data
+     *
      * @return array
-     * @throws \Exception
+     *
+     * @throws \SoapFault
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     { 
         $data['paymentOrderKey'] = $this->getTransactionReference();
         $this->responseName = '\Omnipay\DocdataPayments\Message\CancelResponse';
-        return $soapClient->cancel($data);
+        return $soapClient->__soapCall('cancel', $data);
     }
 }

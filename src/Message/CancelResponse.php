@@ -10,7 +10,9 @@ use Omnipay\Common\Message\RedirectResponseInterface;
  */
 class CancelResponse extends AbstractResponse
 {
-    
+    /**
+     * {@inheritdoc}
+     */
     public function isSuccessful()
     {
         if(isset($this->data->cancelSuccess) && $this->data->cancelSuccess->result === 'SUCCESS'){
@@ -18,5 +20,4 @@ class CancelResponse extends AbstractResponse
         }
         return false;
     }
-
 }

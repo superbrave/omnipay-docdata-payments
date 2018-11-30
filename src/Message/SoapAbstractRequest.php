@@ -2,10 +2,10 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
-use Guzzle\Http\ClientInterface;
+use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\AbstractRequest as OmnipayAbstractRequest;
-use SoapClient;
-use SoapFault;
+use Omnipay\Common\Message\AbstractRequest;
+use Omnipay\Common\Message\ResponseInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Omnipay\Common\Exception\InvalidRequestException;
 
@@ -43,10 +43,14 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      */
     protected $liveEndpoint = 'https://secure.docdatapayments.com/ps/services/paymentservice/1_3?wsdl';
 
-    /** @var  SoapClient */
+    /**
+     * @var \SoapClient
+     */
     protected $soapClient;
 
-    /** @var  string The name of the object that is expected in the SOAP response */
+    /**
+     * @var string The name of the object that is expected in the SOAP response
+     */
     public $responseName;
 
     /**
@@ -59,7 +63,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * The retrieved SOAP response, saved immediately after a transaction is run.
      *
-     * @var SoapResponse
+     * @var ResponseInterface
      */
     protected $response;
 
@@ -77,12 +81,12 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * @param ClientInterface $httpClient  A Guzzle client to make API calls with
      * @param HttpRequest     $httpRequest A Symfony HTTP request object
-     * @param SoapClient      $soapClient
+     * @param \SoapClient     $soapClient
      */
     public function __construct(
         ClientInterface $httpClient,
         HttpRequest $httpRequest,
-        SoapClient $soapClient = null
+        \SoapClient $soapClient = null
     ) {
         parent::__construct($httpClient, $httpRequest);
         $this->soapClient = $soapClient;
@@ -94,6 +98,8 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * Use the Merchant Name assigned by Docdata Payments
      *
      * @return string
+     *
+     * @throws InvalidRequestException
      */
     public function getMerchantName()
     {
@@ -109,6 +115,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * Use the Merchant Name assigned by Docdata Payments
      *
      * @param string $value
+     *
      * @return SoapAbstractRequest implements a fluent interface
      */
     public function setMerchantName($value)
@@ -122,6 +129,8 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * Use the Site ID assigned by Allied wallet.
      *
      * @return string
+     *
+     * @throws InvalidRequestException
      */
     public function getMerchantPassword()
     {
@@ -137,6 +146,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * Use the Site ID assigned by Allied wallet.
      *
      * @param string $value
+     *
      * @return SoapAbstractRequest implements a fluent interface
      */
     public function setMerchantPassword($value)
@@ -257,12 +267,13 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * Build the SOAP Client and the internal request object
      *
-     * @return SoapClient
+     * @return \SoapClient
+     *
      * @throws \Exception
      */
     public function buildSoapClient()
     {
-        if (! empty($this->soapClient)) {
+        if ($this->soapClient !== null) {
             return $this->soapClient;
         }
 
@@ -293,13 +304,9 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
             $soap_options['cache_wsdl'] = WSDL_CACHE_BOTH;
         }
 
-        try {
-            // create the soap client
-            $this->soapClient = new \SoapClient($this->getEndpoint(), $soap_options);
-            return $this->soapClient;
-        } catch (SoapFault $sf) {
-            throw new \Exception($sf->getMessage(), $sf->getCode());
-        }
+        $this->soapClient = new \SoapClient($this->getEndpoint(), $soap_options);
+
+        return $this->soapClient;
     }
 
     /**
@@ -307,18 +314,22 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * Over-ride this in sub classes.
      *
-     * @param SoapClient $soapClient
+     * @param \SoapClient $soapClient
      * @param array $data
+     *
      * @return array
-     * @throws \Exception
+     *
+     * @throws \SoapFault
      */
-    abstract protected function runTransaction($soapClient, $data);
+    abstract protected function runTransaction(\SoapClient $soapClient, array $data);
 
     /**
      * Send Data to the Gateway
      *
      * @param array $data
-     * @return SoapResponse
+     *
+     * @return ResponseInterface
+     *
      * @throws \Exception
      */
     public function sendData($data)
@@ -328,8 +339,10 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
 
         // Replace this line with the correct function.
         $response = $this->runTransaction($soapClient, $data);
-        $class= $this->responseName;
-        return $this->response = new $class($this, $response);
+        $class = $this->responseName;
+        $this->response = new $class($this, $response);
+
+        return $this->response;
     }
 
     /**

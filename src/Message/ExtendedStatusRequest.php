@@ -23,15 +23,17 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
+     * @param \SoapClient $soapClient
      * @param array $data
+     *
      * @return array
+     *
      * @throws \Exception
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     {
-        $this->responseName = '\Omnipay\DocdataPayments\Message\ExtendedStatusResponse';
-        return $soapClient->statusExtended($data);
+        $this->responseName = ExtendedStatusResponse::class;
+        return $soapClient->__soapCall('statusExtended', $data);
     }
     
     
@@ -45,7 +47,7 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
         if(isset($this->data->statusSuccess)) {
             return true;
         }
-        return STATUS_FAILED;
+        return self::STATUS_FAILED;
     }
     
     /**

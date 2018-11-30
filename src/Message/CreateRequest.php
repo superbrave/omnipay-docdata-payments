@@ -104,14 +104,16 @@ class CreateRequest extends SoapAbstractRequest
     /**
      * Run the SOAP transaction
      *
-     * @param SoapClient $soapClient
-     * @param array $data
+     * @param \SoapClient $soapClient
+     * @param array       $data
+     *
      * @return array
+     *
      * @throws \Exception
      */
-    protected function runTransaction($soapClient, $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data)
     {
         $this->responseName = '\Omnipay\DocdataPayments\Message\CreateResponse';
-        return $soapClient->create($data);
+        return $soapClient->__soapCall('create', $data);
     }
 }

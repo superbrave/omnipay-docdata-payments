@@ -169,7 +169,7 @@ class WebdirectGateway extends AbstractGateway
 
     public function getName()
     {
-        return 'Docdata Payments One Page Checkout';
+        return 'Docdata Payments Webdirect';
     }
 
     public function getDefaultParameters()
@@ -264,6 +264,7 @@ class WebdirectGateway extends AbstractGateway
      */
     public function acceptNotification(array $parameters = array())
     {
+        //TODO let's just use the parameters to check and figure out the status.
         return $this->createRequest(StatusRequest::class, $parameters);
     }
 
