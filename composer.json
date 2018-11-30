@@ -24,7 +24,8 @@
         "psr-4": { "Omnipay\\DocdataPayments\\" : "src/" }
     },
     "require": {
-        "league/omnipay": "^3.0",
-        "ext-soap": "*"
+        "php": "^7.0",
+        "ext-soap": "*",
+        "league/omnipay": "^3.0"
     }
 }

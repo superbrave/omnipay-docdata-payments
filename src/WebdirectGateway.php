@@ -309,14 +309,19 @@ class WebdirectGateway extends AbstractGateway
         return $this->createRequest(CaptureRequest::class, $parameters);
     }
 
-    public function status(array $parameters = array())
-    {
-        return $this->createRequest(StatusRequest::class, $parameters);
-    }
-
     public function extendedStatus(array $parameters = array())
     {
         return $this->createRequest(ExtendedStatusRequest::class, $parameters);
+    }
+
+    /**
+     * Get the status of the transaction.
+     *
+     * @param array $options
+     */
+    public function fetchTransaction(array $options = []): RequestInterface
+    {
+        return $this->createRequest(StatusRequest::class, $options);
     }
 
     public function completePurchase(array $options = array())
