@@ -318,6 +318,8 @@ class WebdirectGateway extends AbstractGateway
      * Get the status of the transaction.
      *
      * @param array $options
+     *
+     * @return RequestInterface
      */
     public function fetchTransaction(array $options = []): RequestInterface
     {
