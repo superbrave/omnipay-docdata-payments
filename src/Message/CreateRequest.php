@@ -27,16 +27,16 @@ class CreateRequest extends SoapAbstractRequest
 
     public function validateCard($card)
     {
-        foreach ($this->validateCard as $name=>$rule) {
+        foreach ($this->validateCard as $name => $rule) {
             $value = $card->{"get{$name}"}();
-            if(!$rule['empty'] && empty($value)) {
+            if (!$rule['empty'] && empty($value)) {
                 throw new InvalidRequestException("$name must be set.");
             }
-            if(isset($rule['min']) && $rule['min'] && strlen($value) < $rule['min']){
+            if (isset($rule['min']) && $rule['min'] && strlen($value) < $rule['min']) {
                 throw new InvalidRequestException("$name must be at least {$rule['min']} characters long.");
             }
             
-            if(isset($rule['max']) && $rule['max'] && strlen($value) > $rule['max']){
+            if (isset($rule['max']) && $rule['max'] && strlen($value) > $rule['max']) {
                 throw new InvalidRequestException("$name must be at most {$rule['max']} characters long.");
             }
         }
@@ -60,10 +60,9 @@ class CreateRequest extends SoapAbstractRequest
         $data['shopper']['name']['last'] = $card->getLastName();
         $data['shopper']['email'] = $card->getEmail();
         $data['shopper']['language']['code'] = $this->getLanguage();
-        if($card->getGender() == 'M' || $card->getGender() == 'F') {
+        if ($card->getGender() == 'M' || $card->getGender() == 'F') {
             $data['shopper']['gender'] = $card->getGender();
-        }
-        else{
+        } else {
             $data['shopper']['gender'] = 'U';
         }
         $data['shopper']['dateOfBirth'] = $card->getBirthday();
@@ -80,8 +79,9 @@ class CreateRequest extends SoapAbstractRequest
         
         if (!preg_match('/^[A-Z]{2}$/', $card->getBillingCountry())) {
             throw new InvalidRequestException('Billing country must be an ISO-3166 two-digit code.');
+        } else {
+            $data['billTo']['address']['country']['code'] = $card->getBillingCountry();
         }
-        else $data['billTo']['address']['country']['code'] = $card->getBillingCountry();
         
         //non mandatory
         $data['billTo']['name']['prefix'] = $card->getBillingTitle();
@@ -111,7 +111,7 @@ class CreateRequest extends SoapAbstractRequest
      *
      * @throws \Exception
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $this->responseName = '\Omnipay\DocdataPayments\Message\CreateResponse';
         return $soapClient->__soapCall('create', $data);

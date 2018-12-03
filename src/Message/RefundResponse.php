@@ -10,13 +10,14 @@ use Omnipay\Common\Message\RedirectResponseInterface;
  */
 class RefundResponse extends AbstractResponse
 {
-    
-    public function isSuccessful()
+    /**
+     * Has the refund been created successfully?
+     *
+     * @return bool Successful refund creation
+     */
+    public function isSuccessful(): bool
     {
-        if(isset($this->data->refundSuccess) && $this->data->refundSuccess->success->code === 'SUCCESS'){
-            return true;
-        }
-        return false;
+        return isset($this->data->refundSuccess)
+            && $this->data->refundSuccess->success->code === 'SUCCESS';
     }
-
 }

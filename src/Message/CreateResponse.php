@@ -15,14 +15,19 @@ class CreateResponse extends AbstractResponse implements RedirectResponseInterfa
 
     public function isSuccessful()
     {
-        if(isset($this->data->createSuccess) && $this->data->createSuccess->success->code === 'SUCCESS') return true;
+        if (isset($this->data->createSuccess) && $this->data->createSuccess->success->code === 'SUCCESS') {
+            return true;
+        }
         return false;
     }
     
     public function getMessage()
     {
-        if($this->isSuccessful()) return $this->data->createSuccess->success->_;
-        else return $this->data->createErrors->error->_;
+        if ($this->isSuccessful()) {
+            return $this->data->createSuccess->success->_;
+        } else {
+            return $this->data->createErrors->error->_;
+        }
     }
 
     public function isRedirect()
@@ -63,7 +68,7 @@ class CreateResponse extends AbstractResponse implements RedirectResponseInterfa
      * 5 return_url_pending No The URL that your client will be redirected to after the payment menu was accessed for a pending payment.
      * 6 return_url_error No The URL that your client will be redirected to after an error has occurred.
      * 7 client_language No The 2-letter ISO language code, will diplay the menu in the language you have specified.
-     * 
+     *
      * @author Burak USGURLU <burak@uskur.com.tr>
      * @return string[]|NULL[]
      */

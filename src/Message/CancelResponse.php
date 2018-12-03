@@ -15,7 +15,7 @@ class CancelResponse extends AbstractResponse
      */
     public function isSuccessful()
     {
-        if(isset($this->data->cancelSuccess) && $this->data->cancelSuccess->result === 'SUCCESS'){
+        if (isset($this->data->cancelSuccess) && $this->data->cancelSuccess->result === 'SUCCESS') {
             return true;
         }
         return false;

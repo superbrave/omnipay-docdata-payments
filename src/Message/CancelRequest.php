@@ -20,8 +20,8 @@ class CancelRequest extends SoapAbstractRequest
      *
      * @throws \SoapFault
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
-    { 
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    {
         $data['paymentOrderKey'] = $this->getTransactionReference();
         $this->responseName = '\Omnipay\DocdataPayments\Message\CancelResponse';
         return $soapClient->__soapCall('cancel', $data);

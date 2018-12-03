@@ -1,10 +1,12 @@
 <?php
 
 namespace Omnipay\DocdataPayments\Message;
+
 use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
 use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
 use Omnipay\Common\Message\AbstractRequest;
+
 /**
  * The url of the notification must be set at the back office.
  * returns as a get request
@@ -24,13 +26,13 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient
-     * @param array $data
+     * @param array       $data
      *
      * @return array
      *
      * @throws \Exception
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $this->responseName = ExtendedStatusResponse::class;
         return $soapClient->__soapCall('statusExtended', $data);
@@ -43,8 +45,9 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
      * @return string Transaction status, one of {@see STATUS_COMPLETED}, {@see #STATUS_PENDING},
      * or {@see #STATUS_FAILED}.
      */
-    public function getTransactionStatus(){
-        if(isset($this->data->statusSuccess)) {
+    public function getTransactionStatus()
+    {
+        if (isset($this->data->statusSuccess)) {
             return true;
         }
         return self::STATUS_FAILED;
@@ -55,7 +58,7 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
      *
      * @return string A response message from the payment gateway
      */
-    public function getMessage(){
-        
+    public function getMessage()
+    {
     }
 }

@@ -21,28 +21,29 @@ class RefundRequest extends SoapAbstractRequest
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient
-     * @param array $data
+     * @param array       $data
      *
      * @return array
      *
      * @throws \Exception
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
-    { 
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
         $status = $soapClient->status($statusData);
         $data['paymentId'] = null;
         $captured = false;
-        if(is_array($status->statusSuccess->report->payment)) {
-            foreach($status->statusSuccess->report->payment as $payment){
-                if($payment->authorization->status == 'AUTHORIZED') $data['paymentId'] = $payment->id;
+        if (is_array($status->statusSuccess->report->payment)) {
+            foreach ($status->statusSuccess->report->payment as $payment) {
+                if ($payment->authorization->status == 'AUTHORIZED') {
+                    $data['paymentId'] = $payment->id;
+                }
             }
-        }
-        elseif($status->statusSuccess->report->payment->authorization->status == 'AUTHORIZED'){
+        } elseif ($status->statusSuccess->report->payment->authorization->status == 'AUTHORIZED') {
             $data['paymentId'] = $status->statusSuccess->report->payment->id;
         }
-        if($data['paymentId'] === null) {
+        if ($data['paymentId'] === null) {
             throw new InvalidRequestException("No payment to refund.");
         }
         

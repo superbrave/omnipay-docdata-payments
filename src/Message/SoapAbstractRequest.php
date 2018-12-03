@@ -81,7 +81,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * @param ClientInterface $httpClient  A Guzzle client to make API calls with
      * @param HttpRequest     $httpRequest A Symfony HTTP request object
-     * @param \SoapClient     $soapClient
+     * @param \SoapClient     $soapClient  Configured SoapClient
      */
     public function __construct(
         ClientInterface $httpClient,
@@ -114,13 +114,13 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * Use the Merchant Name assigned by Docdata Payments
      *
-     * @param string $value
+     * @param string $merchantName Merchant name as configured in Docdata backoffice
      *
      * @return SoapAbstractRequest implements a fluent interface
      */
-    public function setMerchantName($value)
+    public function setMerchantName($merchantName)
     {
-        return $this->setParameter('merchantName', $value);
+        return $this->setParameter('merchantName', $merchantName);
     }
 
     /**
@@ -141,77 +141,137 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     }
 
     /**
-     * Set site id
+     * Set merchant password as defined in Docdata backoffice
      *
-     * Use the Site ID assigned by Allied wallet.
-     *
-     * @param string $value
+     * @param string $merchantPassword Password as defined in Docdata backoffice
      *
      * @return SoapAbstractRequest implements a fluent interface
      */
-    public function setMerchantPassword($value)
+    public function setMerchantPassword($merchantPassword)
     {
-        return $this->setParameter('merchantPassword', $value);
+        return $this->setParameter('merchantPassword', $merchantPassword);
     }
-    
-    public function setPaymentProfile($value)
+
+    /**
+     * Set the used payment profile as defined in Docdata backoffice
+     *
+     * @param string $paymentProfile Payment profile ID
+     *
+     * @return SoapAbstractRequest
+     */
+    public function setPaymentProfile(string $paymentProfile)
     {
-        return $this->setParameter('paymentProfile', $value);
+        return $this->setParameter('paymentProfile', $paymentProfile);
     }
-    
+
+    /**
+     * Get the used payment profile as defined in Docdata backoffice
+     *
+     * @return string
+     */
     public function getPaymentProfile()
     {
         if (empty($this->getParameter('paymentProfile'))) {
-            return "default";//standard
+            return 'default';
         }
+
         return $this->getParameter('paymentProfile');
     }
-    
-    public function setPaymentDays($value)
+
+    /**
+     * Set the amount of days before the payment will be closed if unfinished
+     *
+     * @param int $paymentDays Amount of days before payment will be closed
+     *
+     * @return SoapAbstractRequest
+     */
+    public function setPaymentDays($paymentDays)
     {
-        return $this->setParameter('paymentDays', $value);
+        return $this->setParameter('paymentDays', $paymentDays);
     }
-    
-    public function getPaymentDays()
+
+    /**
+     * Get the amount of days before the payment will be closed if unfinished
+     *
+     * @return int
+     */
+    public function getPaymentDays(): int
     {
         if (empty($this->getParameter('paymentDays'))) {
             return 7;
         }
+
         return $this->getParameter('paymentDays');
     }
-    
+
+    /**
+     * Get the ISO 639-1:2002 language of all interfaces Docdata serves to customer
+     *
+     * @return string ISO 639-1:2002 language code
+     *
+     * @throws InvalidRequestException
+     */
     public function getLanguage()
     {
-        if(empty($this->getParameter('language'))) return 'en';
+        if (empty($this->getParameter('language'))) {
+            return 'en';
+        }
+
         $language =  strtolower($this->getParameter('language'));
         if (!preg_match('/^[a-z]{2}$/', $language)) {
-            throw new InvalidRequestException('Language must be an ISO 639-1:2002 Part 1: Alpha-2 Language Codes (lowercase) two-digit code.');
+            throw new InvalidRequestException(
+                'Language must be in ISO 639-1:2002 format.'
+            );
         }
+
         return $language;
     }
-    
-    public function setLanguage($value)
+
+    /**
+     * Set the language of all interfaces Docdata serves to customer (ISO 639-1:2002)
+     *
+     * @param string $languageCode ISO 639-1:2002 language code
+     *
+     * @return SoapAbstractRequest
+     */
+    public function setLanguage(string $languageCode)
     {
-        return $this->setParameter('language', $value);
+        return $this->setParameter('language', $languageCode);
     }
-    
-    public function getShopperId()
+
+    /**
+     * Get the shopper id
+     *
+     * @return string
+     *
+     * @throws InvalidRequestException
+     */
+    public function getShopperId(): string
     {
         if (empty($this->getParameter('shopperId'))) {
             throw new InvalidRequestException('Shopper ID must be set.');
         }
         return $this->getParameter('shopperId');
     }
-    
-    public function setShopperId($value)
+
+    /**
+     * Set the shopper ID
+     *
+     * @param string $shopperId Shopper ID
+     *
+     * @return SoapAbstractRequest
+     */
+    public function setShopperId(string $shopperId)
     {
-        return $this->setParameter('shopperId', $value);
+        return $this->setParameter('shopperId', $shopperId);
     }
-    
+
     /**
      * Get the transaction ID.
      *
      * @return string
+     *
+     * @throws InvalidRequestException
      */
     public function getTransactionId()
     {
@@ -234,12 +294,13 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * Sets the request return URL.
      *
-     * @param string $value
-     * @return AbstractRequest Provides a fluent interface
+     * @param string $pendingUrl Pending request return URL
+     *
+     * @return SoapAbstractRequest Provides a fluent interface
      */
-    public function setPendingUrl($value)
+    public function setPendingUrl($pendingUrl): SoapAbstractRequest
     {
-        return $this->setParameter('pendingUrl', $value);
+        return $this->setParameter('pendingUrl', $pendingUrl);
     }
 
     /**
@@ -254,12 +315,18 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
         $this->request['version'] = "1.3";
         $this->request['merchant']['name'] = $this->getMerchantName();
         $this->request['merchant']['password'] = $this->getMerchantPassword();
+
         //integration info
-        $this->request['integrationInfo']['webshopPlugin'] = 'omnipay-docdata-payments';
-        $this->request['integrationInfo']['webshopPluginVersion'] = 'omnipay-docdata-payments';
-        $this->request['integrationInfo']['programmingLanguage'] = 'php';
-        $this->request['integrationInfo']['operatingSystem'] = PHP_OS;
-        $this->request['integrationInfo']['operatingSystemVersion'] = mb_strimwidth(php_uname(),0,35);
+        $integrationInfo = [];
+
+        $integrationInfo['webshopPlugin'] = 'omnipay-docdata-payments';
+        $integrationInfo['webshopPluginVersion'] = 'omnipay-docdata-payments';
+        $integrationInfo['programmingLanguage'] = 'php';
+        $integrationInfo['operatingSystem'] = PHP_OS;
+        $integrationInfo['operatingSystemVersion'] = mb_substr(php_uname(), 0, 35);
+
+        $this->request['integrationInfo'] = $integrationInfo;
+
 
         return $this->request;
     }
@@ -271,7 +338,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * @throws \Exception
      */
-    public function buildSoapClient()
+    public function buildSoapClient(): \SoapClient
     {
         if ($this->soapClient !== null) {
             return $this->soapClient;
@@ -290,7 +357,8 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
         // set the internal character encoding to avoid random conversions
         // throw SoapFault exceptions when there is an error
         $soap_options = array(
-            'compression'           => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
+            'compression'           => SOAP_COMPRESSION_ACCEPT |
+                SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
             'encoding'              => 'utf-8',
             'exceptions'            => true,
             'connection_timeout'    => $this->timeout,
@@ -314,19 +382,22 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * Over-ride this in sub classes.
      *
-     * @param \SoapClient $soapClient
-     * @param array $data
+     * @param \SoapClient $soapClient Configured SoapClient
+     * @param array       $data       All data to be sent in the transaction
      *
      * @return array
      *
      * @throws \SoapFault
      */
-    abstract protected function runTransaction(\SoapClient $soapClient, array $data);
+    abstract protected function runTransaction(
+        \SoapClient $soapClient,
+        array $data
+    ): array;
 
     /**
      * Send Data to the Gateway
      *
-     * @param array $data
+     * @param array $data Formatted data to be sent to Docdata
      *
      * @return ResponseInterface
      *

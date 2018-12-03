@@ -13,31 +13,35 @@ class CaptureRequest extends SoapAbstractRequest
     /**
      * Run the SOAP transaction
      *
-     * @param \SoapClient $soapClient
-     * @param array $data
+     * @param \SoapClient $soapClient Configured SoapClient
+     * @param array       $data       Formatted Data to be sent to Docdata
      *
      * @return array
      *
      * @throws \SoapFault
+     * @throws InvalidRequestException
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->status($statusData);
+        $status = $soapClient->__soapCall('status', $statusData);
         $data['paymentId'] = null;
-        if(is_array($status->statusSuccess->report->payment)) {
-            foreach($status->statusSuccess->report->payment as $payment){
-                if($payment->authorization->status == 'AUTHORIZED') $data['paymentId'] = $payment->id;
+
+        $payment = $status->statusSuccess->report->payment;
+        if (\is_array($payment)) {
+            if (!isset($payment[0])) {
+                throw new InvalidRequestException('No payment to capture.');
             }
+
+            $payment = $payment[0];
         }
-        elseif($status->statusSuccess->report->payment->authorization->status == 'AUTHORIZED'){
-            $data['paymentId'] = $status->statusSuccess->report->payment->id;
-        }
-        if(is_null($data['paymentId'])) {
-            throw new InvalidRequestException("No payment to capture.");
-        }
-        $data['amount'] = array('_' => $status->statusSuccess->report->payment->authorization->amount->_,'currency' => (string)$status->statusSuccess->report->payment->authorization->amount->currency);
+
+        $data['amount'] = [
+            '_' => $payment->authorization->amount->_,
+            'currency' => $payment->authorization->amount->currency
+        ];
+
         $this->responseName = '\Omnipay\DocdataPayments\Message\CaptureResponse';
         return $soapClient->__soapCall('capture', $data);
     }

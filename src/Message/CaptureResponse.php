@@ -10,27 +10,54 @@ use Omnipay\Common\Message\RedirectResponseInterface;
  */
 class CaptureResponse extends AbstractResponse
 {
-
+    /**
+     * Is capture successful?
+     *
+     * @return bool
+     */
     public function isSuccessful()
     {
-        if(isset($this->data->captureSuccess) && $this->data->captureSuccess->success->code === 'SUCCESS') return true;
-        return false;
-    }
-    
-    public function getMessage()
-    {
-        if($this->isSuccessful()) return $this->data->captureSuccess->success->_;
-        else return $this->data->captureErrors->error->_;
+        return isset($this->data->captureSuccess)
+            && $this->data->captureSuccess->success->code === 'SUCCESS';
     }
 
+    /**
+     * Get the success or error message
+     *
+     * @return string
+     */
+    public function getMessage()
+    {
+        if ($this->isSuccessful()) {
+            return $this->data->captureSuccess->success->_;
+        }
+
+        return $this->data->captureErrors->error->_;
+    }
+
+    /**
+     * Get the transaction reference
+     *
+     * @return null
+     */
     public function getTransactionReference()
     {
         return null;
     }
-    
+
+    /**
+     * Get the transaction ID
+     *
+     * @return string|null
+     *
+     * @TODO I think this doesn't work
+     */
     public function getTransactionId()
     {
-        return !empty($this->getRequest()->getTransactionId()) ? $this->getRequest()->getTransactionId() : null;
-    }
+        if (empty($this->getRequest()->getTransactionId())) {
+            return null;
+        }
 
+        return $this->getRequest()->getTransactionId();
+    }
 }

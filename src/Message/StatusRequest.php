@@ -1,10 +1,12 @@
 <?php
 
 namespace Omnipay\DocdataPayments\Message;
+
 use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
 use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
 use Omnipay\Common\Message\AbstractRequest;
+
 /**
  * The url of the notification must be set at the back office.
  * returns as a get request
@@ -12,8 +14,12 @@ use Omnipay\Common\Message\AbstractRequest;
  */
 class StatusRequest extends SoapAbstractRequest implements NotificationInterface
 {
-    
-    public function getData()
+    /**
+     * Get the data that will be sent in the request
+     *
+     * @return array
+     */
+    public function getData(): array
     {
         $data = parent::getData();
         $data['paymentOrderKey'] = $this->getTransactionReference();
@@ -21,16 +27,9 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     }
     
     /**
-     * Run the SOAP transaction
-     *
-     * @param \SoapClient $soapClient
-     * @param array       $data
-     *
-     * @return array
-     *
-     * @throws \SoapFault
+     * {@inheritdoc}
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data)
+    protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $this->responseName = '\Omnipay\DocdataPayments\Message\StatusResponse';
         return $soapClient->__soapCall('status', $data);
@@ -40,12 +39,14 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     /**
      * Was the transaction successful?
      *
-     * @return string Transaction status, one of {@see STATUS_COMPLETED}, {@see #STATUS_PENDING},
-     * or {@see #STATUS_FAILED}.
+     * @return string Transaction status, one of STATUS_COMPLETED, STATUS_PENDING
+     * or STATUS_FAILED.
+     *
+     * @TODO this is supposed to return a status, not a boolean..
      */
     public function getTransactionStatus()
     {
-        if(isset($this->data->statusSuccess)) {
+        if (isset($this->data->statusSuccess)) {
             return true;
         }
         return self::STATUS_FAILED;

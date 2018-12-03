@@ -33,7 +33,7 @@ class WebdirectGateway extends AbstractGateway
      *
      * @param ClientInterface $httpClient  A Guzzle client to make API calls with
      * @param HttpRequest     $httpRequest A Symfony HTTP request object
-     * @param \SoapClient     $soapClient  Configured client for communication with Docdata
+     * @param \SoapClient     $soapClient  Configured SoapClient
      */
     public function __construct(
         ClientInterface $httpClient = null,
@@ -51,26 +51,8 @@ class WebdirectGateway extends AbstractGateway
      * Omnipay\Common\Message\AbstractRequest (or a non-abstract subclass of it)
      * and initialise them with using existing parameters from this gateway.
      *
-     * Example:
-     *
-     * <code>
-     *   class MyRequest extends \Omnipay\Common\Message\AbstractRequest {};
-     *
-     *   class MyGateway extends \Omnipay\Common\AbstractGateway {
-     *     function myRequest($parameters) {
-     *       $this->createRequest('MyRequest', $parameters);
-     *     }
-     *   }
-     *
-     *   // Create the gateway object
-     *   $gw = Omnipay::create('MyGateway');
-     *
-     *   // Create the request object
-     *   $myRequest = $gw->myRequest($someParameters);
-     * </code>
-     *
      * @param string $class      The request class name
-     * @param array  $parameters
+     * @param array  $parameters Data to be sent to Docdata
      *
      * @see \Omnipay\Common\Message\AbstractRequest
      *
@@ -78,7 +60,11 @@ class WebdirectGateway extends AbstractGateway
      */
     protected function createRequest($class, array $parameters)
     {
-        /** @var SoapAbstractRequest $obj */
+        /**
+         * Recognise $obj as request
+         *
+         * @var SoapAbstractRequest $obj Request class
+         */
         $obj = new $class($this->httpClient, $this->httpRequest, $this->soapClient);
 
         return $obj->initialize(array_replace($this->getParameters(), $parameters));
@@ -86,6 +72,8 @@ class WebdirectGateway extends AbstractGateway
 
     /**
      * {@inheritdoc}
+     *
+     * @return string
      */
     public function getName(): string
     {
@@ -94,6 +82,8 @@ class WebdirectGateway extends AbstractGateway
 
     /**
      * {@inheritdoc}
+     *
+     * @return array
      */
     public function getDefaultParameters(): array
     {
@@ -119,15 +109,15 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Set merchant id
      *
-     * Use the Merchant ID assigned by Allied wallet.
+     * Use the Merchant ID as set up in backoffice.
      *
-     * @param string $value
+     * @param string $merchantName Name of merchant as set up in backoffice
      *
      * @return WebdirectGateway implements a fluent interface
      */
-    public function setMerchantName(string $value): WebdirectGateway
+    public function setMerchantName(string $merchantName): WebdirectGateway
     {
-        return $this->setParameter('merchantName', $value);
+        return $this->setParameter('merchantName', $merchantName);
     }
 
     /**
@@ -147,17 +137,21 @@ class WebdirectGateway extends AbstractGateway
      *
      * Use the Site ID assigned by Allied wallet.
      *
-     * @param string $value
+     * @param string $merchantPassword Merchant password as set up in backoffice
      *
      * @return WebdirectGateway implements a fluent interface
      */
-    public function setMerchantPassword($value): WebdirectGateway
+    public function setMerchantPassword($merchantPassword): WebdirectGateway
     {
-        return $this->setParameter('merchantPassword', $value);
+        return $this->setParameter('merchantPassword', $merchantPassword);
     }
 
     /**
-     * {@inheritdoc}
+     * Start a transaction
+     *
+     * @param array $parameters Data to be sent to Docdata
+     *
+     * @return RequestInterface
      */
     public function purchase(array $parameters = array()): RequestInterface
     {
@@ -167,7 +161,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Create an authorize request
      *
-     * @param array $parameters
+     * @param array $parameters Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -179,7 +173,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Handle notification callback.
      *
-     * @param array $parameters
+     * @param array $parameters Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -192,7 +186,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Create a capture request
      *
-     * @param array $parameters
+     * @param array $parameters Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -204,7 +198,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Create a refund request
      *
-     * @param array $parameters
+     * @param array $parameters Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -216,7 +210,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Create a void request
      *
-     * @param array $parameters
+     * @param array $parameters Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -225,11 +219,25 @@ class WebdirectGateway extends AbstractGateway
         return $this->createRequest(CancelRequest::class, $parameters);
     }
 
+    /**
+     * Create completeAuthorize request
+     *
+     * @param array $parameters Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function completeAuthorize(array $parameters = array())
     {
         return $this->createRequest(CaptureRequest::class, $parameters);
     }
 
+    /**
+     * Create a extendedStatus request
+     *
+     * @param array $parameters Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function extendedStatus(array $parameters = array())
     {
         return $this->createRequest(ExtendedStatusRequest::class, $parameters);
@@ -238,7 +246,7 @@ class WebdirectGateway extends AbstractGateway
     /**
      * Get the status of the transaction.
      *
-     * @param array $options
+     * @param array $options Data to be sent to Docdata
      *
      * @return RequestInterface
      */
@@ -247,21 +255,49 @@ class WebdirectGateway extends AbstractGateway
         return $this->createRequest(StatusRequest::class, $options);
     }
 
+    /**
+     * Create a completePurchase request
+     *
+     * @param array $options Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function completePurchase(array $options = array())
     {
         // TODO: Implement completePurchase() method.
     }
 
+    /**
+     * Create a createCard request
+     *
+     * @param array $options Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function createCard(array $options = array())
     {
         // TODO: Implement createCard() method.
     }
 
+    /**
+     * Create a updateCard request
+     *
+     * @param array $options Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function updateCard(array $options = array())
     {
         // TODO: Implement updateCard() method.
     }
 
+    /**
+     * Create a deleteCard request
+     *
+     * @param array $options Data to be sent to Docdata
+     *
+     * @return RequestInterface
+     */
     public function deleteCard(array $options = array())
     {
         // TODO: Implement deleteCard() method.
