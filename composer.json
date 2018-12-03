@@ -1,5 +1,5 @@
 {
-    "name": "uskur/omnipay-docdata-payments",
+    "name": "superbrave/omnipay-docdata-payments",
     "type": "library",
     "description": "Docdata Payments support for Omnipay payment processing library",
     "keywords": [
@@ -12,12 +12,16 @@
         "purchase",
         "soap"
     ],
-    "homepage": "https://github.com/Uskur/omnipay-docdata-payments",
+    "homepage": "https://github.com/superbrave/omnipay-docdata-payments",
     "license": "MIT",
     "authors": [
         {
             "name": "Burak USGURLU",
             "email": "burak@uskur.com.tr"
+        },
+        {
+            "name": "Hans Goedegebuure",
+            "email": "hg@superbrave.nl"
         }
     ],
     "autoload": {
@@ -27,5 +31,9 @@
         "php": "^7.0",
         "ext-soap": "*",
         "league/omnipay": "^3.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.3",
+        "superbrave/coding-standards": "^0.2.0"
     }
 }
