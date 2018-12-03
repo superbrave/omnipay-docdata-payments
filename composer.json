@@ -33,7 +33,6 @@
         "league/omnipay": "^3.0"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.3",
         "superbrave/coding-standards": "^0.2.0"
     }
 }
