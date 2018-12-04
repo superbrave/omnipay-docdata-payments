@@ -18,6 +18,11 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
  * Docdata gateway for Omnipay
  *
  * @package Omnipay\DocdataPayments
+ *
+ * @method RequestInterface completePurchase(array $options = array())
+ * @method RequestInterface createCard(array $options = array())
+ * @method RequestInterface updateCard(array $options = array())
+ * @method RequestInterface deleteCard(array $options = array())
  */
 class WebdirectGateway extends AbstractGateway
 {
@@ -253,53 +258,5 @@ class WebdirectGateway extends AbstractGateway
     public function fetchTransaction(array $options = []): RequestInterface
     {
         return $this->createRequest(StatusRequest::class, $options);
-    }
-
-    /**
-     * Create a completePurchase request
-     *
-     * @param array $options Data to be sent to Docdata
-     *
-     * @return RequestInterface
-     */
-    public function completePurchase(array $options = array())
-    {
-        // TODO: Implement completePurchase() method.
-    }
-
-    /**
-     * Create a createCard request
-     *
-     * @param array $options Data to be sent to Docdata
-     *
-     * @return RequestInterface
-     */
-    public function createCard(array $options = array())
-    {
-        // TODO: Implement createCard() method.
-    }
-
-    /**
-     * Create a updateCard request
-     *
-     * @param array $options Data to be sent to Docdata
-     *
-     * @return RequestInterface
-     */
-    public function updateCard(array $options = array())
-    {
-        // TODO: Implement updateCard() method.
-    }
-
-    /**
-     * Create a deleteCard request
-     *
-     * @param array $options Data to be sent to Docdata
-     *
-     * @return RequestInterface
-     */
-    public function deleteCard(array $options = array())
-    {
-        // TODO: Implement deleteCard() method.
     }
 }
