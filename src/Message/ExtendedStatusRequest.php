@@ -14,7 +14,11 @@ use Omnipay\Common\Message\AbstractRequest;
  */
 class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationInterface
 {
-    
+    /**
+     * Get the data for the request
+     *
+     * @return array
+     */
     public function getData()
     {
         $data = parent::getData();
@@ -25,8 +29,8 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
     /**
      * Run the SOAP transaction
      *
-     * @param \SoapClient $soapClient
-     * @param array       $data
+     * @param \SoapClient $soapClient Configured SoapClient
+     * @param array       $data       Formatted data to be sent to Docdata
      *
      * @return array
      *
@@ -42,8 +46,10 @@ class ExtendedStatusRequest extends SoapAbstractRequest implements NotificationI
     /**
      * Was the transaction successful?
      *
-     * @return string Transaction status, one of {@see STATUS_COMPLETED}, {@see #STATUS_PENDING},
-     * or {@see #STATUS_FAILED}.
+     * @return string Transaction status, one of {STATUS_COMPLETED},
+     * {STATUS_PENDING} or {STATUS_FAILED}.
+     *
+     * @TODO status should be one of STATUS_* constants
      */
     public function getTransactionStatus()
     {
