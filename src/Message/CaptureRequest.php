@@ -26,23 +26,35 @@ class CaptureRequest extends SoapAbstractRequest
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
         $status = $soapClient->__soapCall('status', $statusData);
-        $data['paymentId'] = null;
 
-        $payment = $status->statusSuccess->report->payment;
-        if (\is_array($payment)) {
-            if (!isset($payment[0])) {
-                throw new InvalidRequestException('No payment to capture.');
+        $payments = $status->statusSuccess->report->payment;
+        $authorizedPayment = null;
+
+        if (\is_array($payments) === false) {
+            $payments = [
+                $payments
+            ];
+        }
+
+        foreach ($payments as $payment) {
+            if ($payment->authorization->status === 'AUTHORIZED') {
+                $authorizedPayment = $payment;
+                break;
             }
+        }
 
-            $payment = $payment[0];
+        if ($authorizedPayment === null) {
+            throw new InvalidRequestException('No payment to capture.');
         }
 
         $data['amount'] = [
-            '_' => $payment->authorization->amount->_,
-            'currency' => $payment->authorization->amount->currency
+            '_' => $authorizedPayment->authorization->amount->_,
+            'currency' => $authorizedPayment->authorization->amount->currency
         ];
 
-        $this->responseName = '\Omnipay\DocdataPayments\Message\CaptureResponse';
+        $data['paymentId'] = $authorizedPayment->id;
+
+        $this->responseName = CaptureResponse::class;
         return $soapClient->__soapCall('capture', $data);
     }
 }
