@@ -10,18 +10,27 @@ use Omnipay\Common\CreditCard;
  */
 class RefundRequest extends SoapAbstractRequest
 {
-    
+    /**
+     * Get the formatted data to be sent to Docdata
+     *
+     * @return array
+     */
     public function getData()
     {
         $data = parent::getData();
-        $data['amount'] = array('_' => $this->getAmountInteger(),'currency' => $this->getCurrency());
+
+        $data['amount'] = [
+            '_' => $this->getAmountInteger(),
+            'currency' => $this->getCurrency()
+        ];
+
         return $data;
     }
     /**
      * Run the SOAP transaction
      *
-     * @param \SoapClient $soapClient
-     * @param array       $data
+     * @param \SoapClient $soapClient Configured SoapClient
+     * @param array       $data       Data array in Docdata format
      *
      * @return array
      *
@@ -31,22 +40,33 @@ class RefundRequest extends SoapAbstractRequest
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->status($statusData);
-        $data['paymentId'] = null;
-        $captured = false;
-        if (is_array($status->statusSuccess->report->payment)) {
-            foreach ($status->statusSuccess->report->payment as $payment) {
-                if ($payment->authorization->status == 'AUTHORIZED') {
-                    $data['paymentId'] = $payment->id;
-                }
+        $status = $soapClient->__soapCall('status', $statusData);
+
+        $payments = $status->statusSuccess->report->payment;
+        if (!is_array($payments)) {
+            // Convert to an array
+            $payments = [
+                $payments
+            ];
+        }
+
+        foreach ($payments as $payment) {
+            if ($payment->authorization->status === 'AUTHORIZED') {
+                $paymentIdToRefund = $payment->id;
             }
-        } elseif ($status->statusSuccess->report->payment->authorization->status == 'AUTHORIZED') {
-            $data['paymentId'] = $status->statusSuccess->report->payment->id;
         }
-        if ($data['paymentId'] === null) {
-            throw new InvalidRequestException("No payment to refund.");
+
+        if ($paymentIdToRefund === null) {
+            throw new InvalidRequestException(
+                sprintf(
+                    'No authorized payments found for transaction #%s.',
+                    $this->getTransactionReference()
+                )
+            );
         }
-        
+
+        $data['paymentId'] = $paymentIdToRefund;
+
         $this->responseName = RefundResponse::class;
         return $soapClient->__soapCall('refund', $data);
     }

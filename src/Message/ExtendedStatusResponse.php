@@ -10,42 +10,52 @@ use Omnipay\Common\Message\RedirectResponseInterface;
  */
 class ExtendedStatusResponse extends AbstractResponse
 {
-    
-    //get the payment id(s) to be captured
+    /**
+     * Get the payment id(s) to be captured
+     *
+     * @return string|null
+     */
     public function getTransactionReference()
     {
         return $this->data->statusSuccess->report->payment->id;
     }
-    
-    public function isSuccessful()
+
+    /**
+     * Is the payment completed
+     *
+     * @return bool
+     */
+    public function isSuccessful(): bool
     {
-        if (isset($this->data->statusSuccess) && $this->data->statusSuccess->success->code === 'SUCCESS') {
-            if (!isset($this->data->statusSuccess->report->payment)) {
-                return false;
-            } elseif (is_array($this->data->statusSuccess->report->payment)) {
-                foreach ($this->data->statusSuccess->report->payment as $payment) {
-                    if ($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') {
-                        if ($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
-                            return true;
-                        }
-                        return false;
-                    } elseif ($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') {
-                        return true;
-                    }
-                }
-            } else {
-                $payment = $this->data->statusSuccess->report->payment;
-                if ($payment->paymentMethod == 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') {
-                    if ($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
-                        return true;
-                    }
-                    return false;
-                } elseif ($payment->paymentMethod != 'BANK_TRANSFER' && $payment->authorization->status == 'AUTHORIZED') {
-                    return true;
-                }
-            }
+        $statusSuccess = $this->data->statusSuccess;
+
+        if (!isset($statusSuccess) || $statusSuccess !== 'SUCCESS') {
+            return false;
         }
-        return false;
+
+        $payment = $statusSuccess->report->payment;
+        if (!isset($statusSuccess->report->payment)) {
+            return false;
+        }
+
+        if (is_array($this->data->statusSuccess->report->payment)) {
+            $payment = $payment[0];
+        }
+
+        if ($payment->authorization->status !== 'AUTHORIZED') {
+            return false;
+        }
+
+        if ($payment->paymentMethod === 'BANK_TRANSFER') {
+            $approximateTotals = $statusSuccess->report->approximateTotals;
+
+            $totalRegistered = $approximateTotals->totalRegistered;
+            $totalCaptured = $approximateTotals->totalCaptured;
+
+            return $totalRegistered === $totalCaptured;
+        }
+
+        return true;
     }
     
     /**
@@ -55,36 +65,33 @@ class ExtendedStatusResponse extends AbstractResponse
      */
     public function isPending()
     {
-        if (!isset($this->data->statusSuccess->report->payment)) {
+        $statusSuccess = $this->data->statusSuccess;
+        if (!isset($statusSuccess->report->payment)) {
             return true;
-        } elseif (is_array($this->data->statusSuccess->report->payment)) {
-            foreach ($this->data->statusSuccess->report->payment as $payment) {
-                if ($payment->authorization->status == 'CANCELED') {
-                    continue;
-                }
-                if ($payment->paymentMethod == 'BANK_TRANSFER') {
-                    if ($payment->authorization->status == 'AUTHORIZED') {
-                        if ($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
-                            return false;
-                        }
-                        return true;
-                    }
-                }
-            }
-        } else {
-            $payment = $this->data->statusSuccess->report->payment;
-            if ($payment->authorization->status == 'CANCELED') {
-                return false;
-            }
-            if ($payment->paymentMethod == 'BANK_TRANSFER') {
-                if ($payment->authorization->status == 'AUTHORIZED') {
-                    if ($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
-                        return false;
-                    }
+        }
+
+        $payment = $statusSuccess->report->payment;
+        if (is_array($this->data->statusSuccess->report->payment)) {
+            $payment = $payment[0];
+        }
+
+        $authorizationStatus = $payment->authorization->status;
+        if ($authorizationStatus === 'CANCELED') {
+            return false;
+        }
+
+        //TODO This is probably right, but different from the original implementation
+        if ($authorizationStatus === 'AUTHORIZED') {
+            if ($payment->paymentMethod === 'BANK_TRANSFER') {
+                if ($this->isCaptured() === false) {
                     return true;
                 }
             }
+
+            return false;
         }
+
+        return true;
     }
     
     /**
@@ -94,33 +101,31 @@ class ExtendedStatusResponse extends AbstractResponse
      */
     public function isCancelled()
     {
-        $canceled = false;
-        if (!isset($this->data->statusSuccess->report->payment)) {
-            $canceled = false;
-        } elseif (is_array($this->data->statusSuccess->report->payment)) {
-            foreach ($this->data->statusSuccess->report->payment as $payment) {
-                if ($payment->authorization->status == 'CANCELED') {
-                    $canceled = true;
-                } else {
-                    $canceled = false;
-                }
-            }
-        } else {
-            $payment = $this->data->statusSuccess->report->payment;
-            if ($payment->authorization->status == 'CANCELED') {
-                $canceled = true;
-            } else {
-                $canceled = false;
-            }
+        $payment = $this->data->statusSuccess->report->payment;
+
+        if (!isset($payment)) {
+            return false;
         }
-        return $canceled;
+
+        if (is_array($payment)) {
+            $payment = $payment[0];
+        }
+
+        return $payment->authorization->status === 'CANCELED';
     }
-    
+
+    /**
+     * Is the entire amount captured?
+     *
+     * @return bool
+     */
     public function isCaptured()
     {
-        if ($this->data->statusSuccess->report->approximateTotals->totalRegistered == $this->data->statusSuccess->report->approximateTotals->totalCaptured) {
-            return true;
-        }
-        return false;
+        $approximateTotals = $this->data->statusSuccess->report->approximateTotals;
+
+        $totalRegistered = $approximateTotals->totalRegistered;
+        $totalCaptured = $approximateTotals->totalCaptured;
+
+        return $totalRegistered === $totalCaptured;
     }
 }
