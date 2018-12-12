@@ -47,11 +47,6 @@ class CaptureRequest extends SoapAbstractRequest
             throw new InvalidRequestException('No payment to capture.');
         }
 
-        $data['amount'] = [
-            '_' => $authorizedPayment->authorization->amount->_,
-            'currency' => $authorizedPayment->authorization->amount->currency
-        ];
-
         $data['paymentId'] = $authorizedPayment->id;
 
         $this->responseName = CaptureResponse::class;
