@@ -28,7 +28,6 @@ class CaptureRequest extends SoapAbstractRequest
         $status = $soapClient->__soapCall('status', $statusData);
 
         $payments = $status->statusSuccess->report->payment;
-        $authorizedPayment = null;
 
         if (\is_array($payments) === false) {
             $payments = [
@@ -36,6 +35,7 @@ class CaptureRequest extends SoapAbstractRequest
             ];
         }
 
+        $authorizedPayment = null;
         foreach ($payments as $payment) {
             if ($payment->authorization->status === 'AUTHORIZED') {
                 $authorizedPayment = $payment;
