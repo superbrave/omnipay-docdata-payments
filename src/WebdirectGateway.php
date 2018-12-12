@@ -7,7 +7,6 @@ use Omnipay\Common\Message\RequestInterface;
 use Omnipay\DocdataPayments\Message\CancelRequest;
 use Omnipay\DocdataPayments\Message\CaptureRequest;
 use Omnipay\DocdataPayments\Message\CreateRequest;
-use Omnipay\DocdataPayments\Message\ExtendedStatusRequest;
 use Omnipay\DocdataPayments\Message\RefundRequest;
 use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
 use Omnipay\Common\AbstractGateway;
@@ -234,18 +233,6 @@ class WebdirectGateway extends AbstractGateway
     public function completeAuthorize(array $parameters = array())
     {
         return $this->createRequest(CaptureRequest::class, $parameters);
-    }
-
-    /**
-     * Create a extendedStatus request
-     *
-     * @param array $parameters Data to be sent to Docdata
-     *
-     * @return RequestInterface
-     */
-    public function extendedStatus(array $parameters = array())
-    {
-        return $this->createRequest(ExtendedStatusRequest::class, $parameters);
     }
 
     /**

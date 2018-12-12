@@ -27,22 +27,18 @@ class StatusResponse extends AbstractResponse
      */
     public function isSuccessful(): bool
     {
-        if (!isset($this->data->statusSuccess)) {
-            return false;
-        }
-
         $statusSuccess = $this->data->statusSuccess;
-        if ($statusSuccess->success->code !== 'SUCCESS') {
-            return false;
-        }
 
-        if (!isset($statusSuccess->report->payment)) {
+        if (!isset($statusSuccess) || $statusSuccess !== 'SUCCESS') {
             return false;
         }
 
         $payment = $statusSuccess->report->payment;
+        if (!isset($statusSuccess->report->payment)) {
+            return false;
+        }
 
-        if (\is_array($this->data->statusSuccess->report->payment)) {
+        if (is_array($this->data->statusSuccess->report->payment)) {
             $payment = $payment[0];
         }
 
@@ -51,10 +47,10 @@ class StatusResponse extends AbstractResponse
         }
 
         if ($payment->paymentMethod === 'BANK_TRANSFER') {
-            $totalRegistered = $statusSuccess->report->approximateTotals
-                ->totalRegistered;
-            $totalCaptured = $statusSuccess->report->approximateTotals
-                ->totalCaptured;
+            $approximateTotals = $statusSuccess->report->approximateTotals;
+
+            $totalRegistered = $approximateTotals->totalRegistered;
+            $totalCaptured = $approximateTotals->totalCaptured;
 
             return $totalRegistered === $totalCaptured;
         }
@@ -69,32 +65,33 @@ class StatusResponse extends AbstractResponse
      */
     public function isPending(): bool
     {
-        if (!isset($this->data->statusSuccess->report->payment)) {
+        $statusSuccess = $this->data->statusSuccess;
+        if (!isset($statusSuccess->report->payment)) {
             return true;
         }
 
-        $payment = $this->data->statusSuccess->report->payment;
-        if (is_array($payment)) {
+        $payment = $statusSuccess->report->payment;
+        if (is_array($this->data->statusSuccess->report->payment)) {
             $payment = $payment[0];
         }
 
-        if ($payment->authorization->status === 'CANCELED') {
+        $authorizationStatus = $payment->authorization->status;
+        if ($authorizationStatus === 'CANCELED') {
             return false;
         }
 
-        if ($payment->paymentMethod === 'BANK_TRANSFER') {
-            if ($payment->authorization->status !== 'AUTHORIZED') {
-                return true;
+        //TODO This is probably right, but different from the original implementation
+        if ($authorizationStatus === 'AUTHORIZED') {
+            if ($payment->paymentMethod === 'BANK_TRANSFER') {
+                if ($this->isCaptured() === false) {
+                    return true;
+                }
             }
 
-            $totalRegistered = $this->data->statusSuccess->report->approximateTotals
-                ->totalRegistered;
-            $totalCaptured = $this->data->statusSuccess->report->approximateTotals
-                ->totalCaptured;
-            return $totalRegistered !== $totalCaptured;
+            return false;
         }
 
-        return false;
+        return true;
     }
     
     /**
@@ -104,7 +101,6 @@ class StatusResponse extends AbstractResponse
      */
     public function isCancelled(): bool
     {
-
         if (!isset($this->data->statusSuccess->report->payment)) {
             return false;
         }
@@ -114,6 +110,7 @@ class StatusResponse extends AbstractResponse
         if (\is_array($payment)) {
             $payment = $payment[0];
         }
+
 
         return $payment->authorization->status === 'CANCELED';
     }
@@ -125,10 +122,10 @@ class StatusResponse extends AbstractResponse
      */
     public function isCaptured(): bool
     {
-        $totalRegistered = $this->data->statusSuccess->report->approximateTotals
-            ->totalRegistered;
-        $totalCaptured = $this->data->statusSuccess->report->approximateTotals
-            ->totalCaptured;
+        $approximateTotals = $this->data->statusSuccess->report->approximateTotals;
+
+        $totalRegistered = $approximateTotals->totalRegistered;
+        $totalCaptured = $approximateTotals->totalCaptured;
 
         return $totalRegistered === $totalCaptured;
     }
