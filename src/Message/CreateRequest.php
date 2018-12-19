@@ -33,8 +33,7 @@ class CreateRequest extends SoapAbstractRequest
             'max' => 100
         ],
         'BillingAddress2' => [
-            'empty' => false,
-            'min' => 1,
+            'empty' => true,
             'max' => 35
         ],
         'BillingCity' => [
