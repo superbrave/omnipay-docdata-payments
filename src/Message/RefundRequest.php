@@ -40,7 +40,7 @@ class RefundRequest extends SoapAbstractRequest
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->__soapCall('status', $statusData);
+        $status = $soapClient->__soapCall('status', [$statusData]);
 
         $payments = $status->statusSuccess->report->payment;
         if (!is_array($payments)) {
@@ -68,6 +68,6 @@ class RefundRequest extends SoapAbstractRequest
         $data['paymentId'] = $paymentIdToRefund;
 
         $this->responseName = RefundResponse::class;
-        return $soapClient->__soapCall('refund', $data);
+        return $soapClient->__soapCall('refund', [$data]);
     }
 }

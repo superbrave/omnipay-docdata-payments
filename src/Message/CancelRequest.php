@@ -24,6 +24,6 @@ class CancelRequest extends SoapAbstractRequest
     {
         $data['paymentOrderKey'] = $this->getTransactionReference();
         $this->responseName = '\Omnipay\DocdataPayments\Message\CancelResponse';
-        return $soapClient->__soapCall('cancel', $data);
+        return $soapClient->__soapCall('cancel', [$data]);
     }
 }

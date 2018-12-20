@@ -32,7 +32,7 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $this->responseName = StatusResponse::class;
-        return $soapClient->__soapCall('status', $data);
+        return $soapClient->__soapCall('status', [$data]);
     }
     
     

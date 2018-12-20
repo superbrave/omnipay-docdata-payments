@@ -25,7 +25,7 @@ class CaptureRequest extends SoapAbstractRequest
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->__soapCall('status', $statusData);
+        $status = $soapClient->__soapCall('status', [$statusData]);
 
         $payments = $status->statusSuccess->report->payment;
 
@@ -50,6 +50,6 @@ class CaptureRequest extends SoapAbstractRequest
         $data['paymentId'] = $authorizedPayment->id;
 
         $this->responseName = CaptureResponse::class;
-        return $soapClient->__soapCall('capture', $data);
+        return $soapClient->__soapCall('capture', [$data]);
     }
 }
