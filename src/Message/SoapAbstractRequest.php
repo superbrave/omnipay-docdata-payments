@@ -73,9 +73,10 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * Create a new Request
      *
-     * @param ClientInterface $httpClient  A Guzzle client to make API calls with
-     * @param HttpRequest     $httpRequest A Symfony HTTP request object
-     * @param \SoapClient     $soapClient  Configured SoapClient
+     * @param ClientInterface  $httpClient  A Guzzle client to make API calls with
+     * @param HttpRequest      $httpRequest A Symfony HTTP request object
+     * @param \SoapClient|null $soapClient  Configured SoapClient; If null, a new
+     *                                      one will be created with default values
      */
     public function __construct(
         ClientInterface $httpClient,
@@ -83,6 +84,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
         \SoapClient $soapClient = null
     ) {
         parent::__construct($httpClient, $httpRequest);
+
         $this->soapClient = $soapClient;
     }
 
