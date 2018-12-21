@@ -4,7 +4,6 @@ namespace Omnipay\DocdataPayments\Message;
 
 use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\AbstractRequest as OmnipayAbstractRequest;
-use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Omnipay\Common\Exception\InvalidRequestException;
@@ -47,11 +46,6 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * @var \SoapClient
      */
     protected $soapClient;
-
-    /**
-     * @var string The name of the object that is expected in the SOAP response
-     */
-    public $responseName;
 
     /**
      * The generated SOAP request data, saved immediately before a transaction is run.
@@ -410,7 +404,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
 
         // Replace this line with the correct function.
         $response = $this->runTransaction($soapClient, $data);
-        $class = $this->responseName;
+        $class = $this->getResponseName();
         $this->response = new $class($this, $response);
 
         return $this->response;
@@ -425,4 +419,11 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     {
         return $this->getTestMode() ? $this->testEndpoint : $this->liveEndpoint;
     }
+
+    /**
+     * Get the FQDN for the response to be created
+     *
+     * @return string
+     */
+    abstract protected function getResponseName(): string;
 }

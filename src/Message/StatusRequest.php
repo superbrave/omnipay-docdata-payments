@@ -2,10 +2,7 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
-use Omnipay\Common\Exception\InvalidResponseException;
 use Omnipay\Common\Message\NotificationInterface;
-use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
-use Omnipay\Common\Message\AbstractRequest;
 
 /**
  * The url of the notification must be set at the back office.
@@ -31,7 +28,6 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
-        $this->responseName = StatusResponse::class;
         return $soapClient->__soapCall('status', [$data]);
     }
     
@@ -61,4 +57,16 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     {
         //TODO is this OK?
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string
+     */
+    protected function getResponseName(): string
+    {
+        return StatusResponse::class;
+    }
+
+
 }

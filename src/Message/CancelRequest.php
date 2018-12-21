@@ -2,9 +2,6 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
-use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\CreditCard;
-
 /**
  * DocdataPayments Cancel Request
  */
@@ -23,7 +20,18 @@ class CancelRequest extends SoapAbstractRequest
     protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
         $data['paymentOrderKey'] = $this->getTransactionReference();
-        $this->responseName = '\Omnipay\DocdataPayments\Message\CancelResponse';
         return $soapClient->__soapCall('cancel', [$data]);
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string
+     */
+    protected function getResponseName(): string
+    {
+        return CancelResponse::class;
+    }
+
+
 }

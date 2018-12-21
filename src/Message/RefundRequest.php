@@ -3,7 +3,6 @@
 namespace Omnipay\DocdataPayments\Message;
 
 use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\CreditCard;
 
 /**
  * DocdataPayments Refund Request
@@ -67,7 +66,18 @@ class RefundRequest extends SoapAbstractRequest
 
         $data['paymentId'] = $paymentIdToRefund;
 
-        $this->responseName = RefundResponse::class;
         return $soapClient->__soapCall('refund', [$data]);
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string
+     */
+    protected function getResponseName(): string
+    {
+        return RefundResponse::class;
+    }
+
+
 }

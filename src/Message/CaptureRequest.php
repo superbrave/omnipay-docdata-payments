@@ -3,7 +3,6 @@
 namespace Omnipay\DocdataPayments\Message;
 
 use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\CreditCard;
 
 /**
  * DocdataPayments Create Request
@@ -49,7 +48,18 @@ class CaptureRequest extends SoapAbstractRequest
 
         $data['paymentId'] = $authorizedPayment->id;
 
-        $this->responseName = CaptureResponse::class;
         return $soapClient->__soapCall('capture', [$data]);
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string
+     */
+    protected function getResponseName(): string
+    {
+        return CaptureResponse::class;
+    }
+
+
 }

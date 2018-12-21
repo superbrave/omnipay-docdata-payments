@@ -173,7 +173,18 @@ class CreateRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): array
     {
-        $this->responseName = CreateResponse::class;
         return $soapClient->__soapCall('create', [$data]);
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string
+     */
+    protected function getResponseName(): string
+    {
+        return CreateResponse::class;
+    }
+
+
 }
