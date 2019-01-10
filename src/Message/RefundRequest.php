@@ -31,11 +31,11 @@ class RefundRequest extends SoapAbstractRequest
      * @param \SoapClient $soapClient Configured SoapClient
      * @param array       $data       Data array in Docdata format
      *
-     * @return array
+     * @return \stdClass
      *
      * @throws \Exception
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();

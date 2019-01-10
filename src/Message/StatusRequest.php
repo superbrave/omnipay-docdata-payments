@@ -26,7 +26,7 @@ class StatusRequest extends SoapAbstractRequest implements NotificationInterface
     /**
      * {@inheritdoc}
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
         return $soapClient->__soapCall('status', [$data]);
     }

@@ -13,11 +13,11 @@ class CancelRequest extends SoapAbstractRequest
      * @param \SoapClient $soapClient Configured SoapClient
      * @param array       $data       Formatted data to be sent to Docdata
      *
-     * @return array
+     * @return \stdClass
      *
      * @throws \SoapFault
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
         $data['paymentOrderKey'] = $this->getTransactionReference();
         return $soapClient->__soapCall('cancel', [$data]);

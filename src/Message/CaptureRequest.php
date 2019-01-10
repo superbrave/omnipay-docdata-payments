@@ -15,12 +15,12 @@ class CaptureRequest extends SoapAbstractRequest
      * @param \SoapClient $soapClient Configured SoapClient
      * @param array       $data       Formatted Data to be sent to Docdata
      *
-     * @return array
+     * @return \stdClass
      *
      * @throws \SoapFault
      * @throws InvalidRequestException
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
         $statusData = $data;
         $statusData['paymentOrderKey'] = $this->getTransactionReference();

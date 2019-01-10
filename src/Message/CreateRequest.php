@@ -167,11 +167,11 @@ class CreateRequest extends SoapAbstractRequest
      * @param \SoapClient $soapClient Configured SoapClient
      * @param array       $data       Formatted data to be sent to Docdata
      *
-     * @return array
+     * @return \stdClass
      *
      * @throws \SoapFault
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): array
+    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
         return $soapClient->__soapCall('create', [$data]);
     }

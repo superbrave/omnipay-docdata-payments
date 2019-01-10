@@ -381,14 +381,14 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * @param \SoapClient $soapClient Configured SoapClient
      * @param array       $data       All data to be sent in the transaction
      *
-     * @return array
+     * @return \stdClass
      *
      * @throws \SoapFault
      */
     abstract protected function runTransaction(
         \SoapClient $soapClient,
         array $data
-    ): array;
+    ): \stdClass;
 
     /**
      * Send Data to the Gateway
