@@ -5,7 +5,7 @@ This package is geared towards the Webdirect method of handling orders in Docdat
 
 
 ## Authorize data
-### Generic
+#### Generic
 ```php
 public function getAuthorizeData() {
     $card = new CreditCard(); // Omnipay CC model
@@ -56,7 +56,7 @@ public function getAuthorizeData() {
 ```
 
 
-### Ideal
+#### Ideal
 Ideal has some special quirks. Add the issuer to the getAuthorizeData method thusly:
 ```php
     $data['paymentInputType'] = 'iDealPaymentInput';
@@ -80,4 +80,15 @@ IssuerId is set by Docdata and not documented in the implementation manual.
 'SNSBNL2A' => 'SNS'         // SNS
 'TRIONL2U' => 'TRIODOS'     // Triodos
 'FVLBNL22' => 'VANLANSCHOT' // Van Lanschot
+```
+
+
+## CompleteAuthorize
+Some payment methods require (most, or a lot) of information also sent on the Authorize call, so getting the same data and adding the transactionReference is the most foolproof way.
+```php
+public function getCompleteAuthorizeData(): array {
+        $data = $this->getAuthorizeData();
+        $data['transactionReference'] = $paymentTransaction->getReference();
+        return $data;
+    }
 ```
