@@ -20,9 +20,7 @@ class CreateResponse extends AbstractResponse implements RedirectResponseInterfa
      */
     public function isSuccessful()
     {
-        $createSuccess = $this->data->createSuccess;
-
-        return isset($createSuccess) && $createSuccess->success->code === 'SUCCESS';
+        return isset($this->data->createSuccess) && $this->data->createSuccess->success->code === 'SUCCESS';
     }
 
     /**
@@ -41,6 +39,7 @@ class CreateResponse extends AbstractResponse implements RedirectResponseInterfa
 
     /**
      * Does the response require a redirect?
+     * The createResponse is always a redirect if the request succeeded.
      *
      * @return boolean
      */
