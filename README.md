@@ -87,8 +87,8 @@ IssuerId is set by Docdata and not documented in the implementation manual.
 Some payment methods require (most, or a lot) of information also sent on the Authorize call, so getting the same data and adding the transactionReference is the most foolproof way.
 ```php
 public function getCompleteAuthorizeData(): array {
-        $data = $this->getAuthorizeData();
-        $data['transactionReference'] = $paymentTransaction->getReference();
-        return $data;
-    }
+    $data = $this->getAuthorizeData();
+    $data['transactionReference'] = $paymentTransaction->getReference();
+    return $data;
+}
 ```

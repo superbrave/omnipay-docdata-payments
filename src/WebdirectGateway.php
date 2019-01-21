@@ -233,7 +233,7 @@ class WebdirectGateway extends AbstractGateway
      */
     public function completeAuthorize(array $parameters = array())
     {
-        return $this->createRequest(CaptureRequest::class, $parameters);
+        return $this->createRequest(StatusRequest::class, $parameters);
     }
 
     /**
