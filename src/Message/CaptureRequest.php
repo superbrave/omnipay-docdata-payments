@@ -116,24 +116,10 @@ class CaptureRequest extends SoapAbstractRequest
     private function isUncapturableState(string $state): bool
     {
         if (in_array(strtoupper($state), [
-            'RISK_CHECK_FAILED',
-            'AUTHENTICATION_FAILED',
-            'AUTHENTICATION_ERROR',
-            'CHARGED_BACK',
-            'CONFIRMED_CHARGEDBACK',
-            'CLOSED_CANCELED',
-            'DECLINED',
             'PAID',
-            'START_ERROR',
-            'FAILED',
             'CAPTURED',
             'COMPLETE',
             'COMPLETED',
-            'CANCEL',
-            'CANCELED', // there is a typo in the protocol
-            'CANCELLED',
-            'ABORT',
-            'ABORTED'
         ])) {
             return true;
         }

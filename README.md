@@ -89,6 +89,8 @@ Some payment methods require (most, or a lot) of information also sent on the Au
 public function getCompleteAuthorizeData(): array {
     $data = $this->getAuthorizeData();
     $data['transactionReference'] = $paymentTransaction->getReference();
+    $data['authorizationResultType'] = 'iDealAuthorizationResult'; // differs per payment method
+    $data['authorizationResult'] = []; // same here
     return $data;
 }
 ```
