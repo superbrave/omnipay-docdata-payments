@@ -24,6 +24,14 @@ class ProceedRequest extends SoapAbstractRequest
     protected $authorizationResult = [];
 
     /**
+     * Creditcards can be handled on docdata side of things, so you dont need to handle CC data.
+     * For this the START request should not be fired, nor the PROCEED request.
+     *
+     * @var bool
+     */
+    protected $skipProceedRequest = false;
+
+    /**
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient Configured SoapClient
@@ -35,6 +43,10 @@ class ProceedRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
+        if ($this->skipProceedRequest) {
+            return $this->createSuccessfulProceedResponseForValidPaymentsButNothingToDo();
+        }
+
         // We only have the paymentOrderKey / Transaction Reference, and not the paymentId.
         // Use a STATUS request to get the reference, to be used in the proceed request.
         $statusData = $data;
@@ -87,7 +99,7 @@ class ProceedRequest extends SoapAbstractRequest
         if ($lastProceedResult === null) {
             if (!empty($this->getAuthorizationResultType())) {
                 // we should have proceeded but we can't
-                return $this->createFakeProceedResponseForNoValidPayments();
+                return $this->createFakeProceedErrorResponseForNoValidPayments();
             }
 
             if (!empty($authorizedPayments)) {
@@ -142,13 +154,29 @@ class ProceedRequest extends SoapAbstractRequest
         $this->authorizationResult = $authorizationResult;
     }
 
+    /**
+     * @return bool
+     */
+    public function getSkipProceedRequest(): bool
+    {
+        return $this->skipProceedRequest;
+    }
+
+    /**
+     * @param bool $skipProceedRequest
+     */
+    public function setSkipProceedRequest(bool $skipProceedRequest)
+    {
+        $this->skipProceedRequest = $skipProceedRequest;
+    }
+
 
     /**
      * Create a stdClass that mimics a failed soap call to docdata, to be used instead of an exception
      *
      * @return \stdClass
      */
-    private function createFakeProceedResponseForNoValidPayments()
+    private function createFakeProceedErrorResponseForNoValidPayments()
     {
         $response = new \stdClass();
         $response->proceedErrors = new \stdClass();

@@ -227,7 +227,7 @@ class CreateRequest extends SoapAbstractRequest
         /** @var \stdClass $createResponse */
         $createResponse = $soapClient->__soapCall('create', [$data]);
 
-        if (isset($createResponse->createSuccess)) {
+        if (isset($createResponse->createSuccess) && $this->fireStartRequestAfterCreate) {
             // this will not return the start Response, as a createResponse is expected
 
             $startData = $this->getStartData($createResponse->createSuccess->key ?? '');
