@@ -2,6 +2,7 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
+use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
@@ -28,12 +29,13 @@ class ProceedResponse extends AbstractResponse
 
     /**
      * Get a reference provided by the gateway to represent the payment.
-     * This is not the same as the transactionReference from the createRequest.
+     * This is the same as the transactionReference from the createRequest.
      *
      * @return null|string
      */
     public function getTransactionReference()
     {
-        return $this->data->proceedSuccess->paymentResponse->paymentSuccess->id ?? null;
+        /** @var AbstractRequest $this->>request */
+        return $this->request->getTransactionReference();
     }
 }
