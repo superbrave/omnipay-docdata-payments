@@ -97,12 +97,6 @@ public function getCompleteAuthorizeData(): array {
 
 
 ## Creditcards
-Docdata can handle CC data if you don't want to store or handle the user input (Protip: don't handle them). To handle this in the package you should send the following code in the authorize() call:
-```php
-$data['fireStartRequestAfterCreate'] = false;
-```
-And the following in completeAuthorize():
-```php
-$data['skipProceedRequest'] = true;
-```
-This way the code will still create the order in docdata, and try to capture it, but not expect you to send the card holder, cc number, etc.
+Docdata can handle CC data if you don't want to store or handle the user input (Protip: don't handle them). To handle this in the package you should use the OnePageCheckoutGateway. This way the code will still create the order in docdata, and try to capture it, but not expect you to send the card holder, cc number, etc.
+
+The webdirect flow uses the WebdirectGateway.
