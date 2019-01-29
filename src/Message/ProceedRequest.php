@@ -24,14 +24,6 @@ class ProceedRequest extends SoapAbstractRequest
     protected $authorizationResult = [];
 
     /**
-     * Creditcards can be handled on docdata side of things, so you dont need to handle CC data.
-     * For this the START request should not be fired, nor the PROCEED request.
-     *
-     * @var bool
-     */
-    protected $skipProceedRequest = false;
-
-    /**
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient Configured SoapClient
@@ -43,10 +35,6 @@ class ProceedRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
-        if ($this->skipProceedRequest) {
-            return $this->createSuccessfulProceedResponseForValidPaymentsButNothingToDo();
-        }
-
         // We only have the paymentOrderKey / Transaction Reference, and not the paymentId.
         // Use a STATUS request to get the reference, to be used in the proceed request.
         $statusData = $data;
@@ -170,6 +158,26 @@ class ProceedRequest extends SoapAbstractRequest
         $this->skipProceedRequest = $skipProceedRequest;
     }
 
+    /**
+     * Create a stdClass that mimics a successful soap call to docdata.
+     * This is used when there were no (authorized) payments to proceed.
+     * This occurs when a user chooses bank transfer.
+     *
+     * @return \stdClass
+     */
+    protected function createSuccessfulProceedResponseForValidPaymentsButNothingToDo()
+    {
+        $response = new \stdClass();
+        $response->proceedSuccess = new \stdClass();
+        $response->proceedSuccess->success = new \stdClass();
+        $response->proceedSuccess->success->_ = 'All payments were already processed so no action was taken.';
+        $response->proceedSuccess->success->code = 'SUCCESS';
+        $response->proceedSuccess->paymentResponse = new \stdClass();
+        $response->proceedSuccess->paymentResponse->paymentSuccess = new \stdClass();
+        $response->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
+
+        return $response;
+    }
 
     /**
      * Create a stdClass that mimics a failed soap call to docdata, to be used instead of an exception
@@ -182,27 +190,6 @@ class ProceedRequest extends SoapAbstractRequest
         $response->proceedErrors = new \stdClass();
         $response->proceedErrors->error = new \stdClass();
         $response->proceedErrors->error->_ = 'No Proceed executed because there were no valid payments';
-
-        return $response;
-    }
-
-    /**
-     * Create a stdClass that mimics a successful soap call to docdata.
-     * This is used when there were no (authorized) payments to proceed.
-     * This occurs when a user chooses bank transfer.
-     *
-     * @return \stdClass
-     */
-    private function createSuccessfulProceedResponseForValidPaymentsButNothingToDo()
-    {
-        $response = new \stdClass();
-        $response->proceedSuccess = new \stdClass();
-        $response->proceedSuccess->success = new \stdClass();
-        $response->proceedSuccess->success->_ = 'All payments were already processed so no action was taken.';
-        $response->proceedSuccess->success->code = 'SUCCESS';
-        $response->proceedSuccess->paymentResponse = new \stdClass();
-        $response->proceedSuccess->paymentResponse->paymentSuccess = new \stdClass();
-        $response->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
 
         return $response;
     }

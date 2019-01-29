@@ -6,12 +6,11 @@ use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\RequestInterface;
 use Omnipay\DocdataPayments\Message\CancelRequest;
 use Omnipay\DocdataPayments\Message\CaptureRequest;
-use Omnipay\DocdataPayments\Message\CreateRequest;
+use Omnipay\DocdataPayments\Message\CreateAndStartRequest;
 use Omnipay\DocdataPayments\Message\ProceedRequest;
 use Omnipay\DocdataPayments\Message\RefundRequest;
 use Omnipay\DocdataPayments\Message\SoapAbstractRequest;
 use Omnipay\Common\AbstractGateway;
-use Omnipay\DocdataPayments\Message\StartRequest;
 use Omnipay\DocdataPayments\Message\StatusRequest;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
@@ -173,7 +172,7 @@ class WebdirectGateway extends AbstractGateway
      */
     public function authorize(array $parameters = array())
     {
-        return $this->createRequest(CreateRequest::class, $parameters);
+        return $this->createRequest(CreateAndStartRequest::class, $parameters);
     }
 
     /**

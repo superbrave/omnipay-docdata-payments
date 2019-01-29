@@ -11,30 +11,6 @@ use Omnipay\Common\CreditCard;
 class CreateRequest extends SoapAbstractRequest
 {
     /**
-     * Most implementations might want to have the START event trigger immediately after the CREATE request.
-     * This because you receive the issuer from the customer on the first page the user interacts with.
-     *
-     * @var bool
-     */
-    protected $fireStartRequestAfterCreate = true;
-
-    /**
-     * Payment method specific information to be used when executing a START request.
-     * E.g. 'issuerId' for iDeal.
-     *
-     * @var array
-     */
-    protected $paymentInput = [];
-
-    /**
-     * Name of the payment method input. E.g. misterCashPaymentInput, elvPaymentInput, iDealPaymentInput
-     * These are defined in the docdata wsdl
-     *
-     * @var string
-     */
-    protected $paymentInputType;
-
-    /**
      * Optional addition to the housenumber. CreditCard object only supports 2 address lines.
      * Docdata has street (100), housenumber (35), housenumberAddition (35)
      *
@@ -194,25 +170,6 @@ class CreateRequest extends SoapAbstractRequest
     }
 
     /**
-     * Get data that is required to fire a START request
-     *
-     * @param string $transactionReference
-     */
-    public function getStartData(string $transactionReference)
-    {
-        $data = parent::getData();
-        $data['paymentOrderKey'] = $transactionReference;
-        $data['returnUrl'] = $this->getReturnUrl();
-        $data['payment']['paymentMethod']= $this->getPaymentMethod();
-
-        if (!empty($this->getPaymentInputType())) {
-            $data['payment'][$this->getPaymentInputType()] = $this->getPaymentInput();
-        }
-
-        return $data;
-    }
-
-    /**
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient Configured SoapClient
@@ -224,21 +181,7 @@ class CreateRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
-        /** @var \stdClass $createResponse */
-        $createResponse = $soapClient->__soapCall('create', [$data]);
-
-        if (isset($createResponse->createSuccess) && $this->fireStartRequestAfterCreate) {
-            // this will not return the start Response, as a createResponse is expected
-
-            $startData = $this->getStartData($createResponse->createSuccess->key ?? '');
-            $startResponse = $soapClient->__soapCall('start', [$startData]);
-
-            if (isset($startResponse->startSuccess) && isset($startResponse->redirect)) {
-                $createResponse->redirect = $startResponse->redirect;
-            }
-        }
-
-        return $createResponse;
+        return $soapClient->__soapCall('create', [$data]);
     }
 
     /**
@@ -249,54 +192,6 @@ class CreateRequest extends SoapAbstractRequest
     protected function getResponseName(): string
     {
         return CreateResponse::class;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getFireStartRequestAfterCreate(): bool
-    {
-        return $this->fireStartRequestAfterCreate;
-    }
-
-    /**
-     * @param bool $fireStartRequestAfterCreate
-     */
-    public function setFireStartRequestAfterCreate(bool $fireStartRequestAfterCreate)
-    {
-        $this->fireStartRequestAfterCreate = $fireStartRequestAfterCreate;
-    }
-
-    /**
-     * @return array
-     */
-    public function getPaymentInput(): array
-    {
-        return $this->paymentInput;
-    }
-
-    /**
-     * @param array $paymentInput
-     */
-    public function setPaymentInput(array $paymentInput)
-    {
-        $this->paymentInput = $paymentInput;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPaymentInputType(): string
-    {
-        return $this->paymentInputType;
-    }
-
-    /**
-     * @param string $paymentInputType
-     */
-    public function setPaymentInputType(string $paymentInputType)
-    {
-        $this->paymentInputType = $paymentInputType;
     }
 
     /**
