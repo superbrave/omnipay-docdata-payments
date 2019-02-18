@@ -87,6 +87,9 @@ class CaptureRequest extends SoapAbstractRequest
      */
     protected function getFirstPaymentToCapture(array $payments)
     {
+        // start at the back as it's very likely the successful one is the latest.
+        $payments = array_reverse($payments);
+
         foreach ($payments as $payment) {
             foreach ($payment->authorization->capture as $capture) {
                 if (is_string($capture) && !$this->isUncapturableState($capture)) {

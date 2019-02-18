@@ -11,13 +11,14 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 class StatusResponse extends AbstractResponse
 {
     /**
-     * Get the payment id(s) to be captured
+     * Get the request reference instead of the payment id.
      *
      * @return string
      */
     public function getTransactionReference(): string
     {
-        return $this->data->statusSuccess->report->payment->id;
+        /** @var AbstractRequest $this->>request */
+        return $this->request->getTransactionReference();
     }
 
     /**
@@ -27,20 +28,16 @@ class StatusResponse extends AbstractResponse
      */
     public function isSuccessful(): bool
     {
-        $statusSuccess = $this->data->statusSuccess;
-
-        if (!isset($statusSuccess) || $statusSuccess !== 'SUCCESS') {
+        if (!isset($this->data->statusSuccess) || $this->data->statusSuccess->success->code !== 'SUCCESS') {
             return false;
         }
 
-        $payment = $statusSuccess->report->payment;
+        $statusSuccess = $this->data->statusSuccess;
+
         if (!isset($statusSuccess->report->payment)) {
             return false;
         }
-
-        if (is_array($this->data->statusSuccess->report->payment)) {
-            $payment = $payment[0];
-        }
+        $payment = $this->getMostRecentPayment();
 
         if ($payment->authorization->status !== 'AUTHORIZED') {
             return false;
@@ -70,7 +67,7 @@ class StatusResponse extends AbstractResponse
             return true;
         }
 
-        $payment = $statusSuccess->report->payment;
+        $payment = $this->getMostRecentPayment();
         if (is_array($this->data->statusSuccess->report->payment)) {
             $payment = $payment[0];
         }
@@ -105,7 +102,7 @@ class StatusResponse extends AbstractResponse
             return false;
         }
 
-        $payment = $this->data->statusSuccess->report->payment;
+        $payment = $this->getMostRecentPayment();
 
         if (\is_array($payment)) {
             $payment = $payment[0];
@@ -128,5 +125,24 @@ class StatusResponse extends AbstractResponse
         $totalCaptured = $approximateTotals->totalCaptured;
 
         return $totalRegistered === $totalCaptured;
+    }
+
+    /**
+     * Docdata returns an array of payments when you do several attempts. It returns 1 object if there was 1 attempt.
+     * Get the most recent payment, as all previous ones should be unsuccessful.
+     * When there is a successful attempt the user is returned to payment service.
+     * The only issue could be bank transfers. No clue how that is handled.
+     *
+     * @return \stdClass payment information
+     */
+    protected function getMostRecentPayment()
+    {
+        $oneOrSeveralPayments = $this->data->statusSuccess->report->payment;
+
+        if (is_array($oneOrSeveralPayments)) {
+            return end($oneOrSeveralPayments);
+        }
+
+        return $oneOrSeveralPayments;
     }
 }

@@ -5,8 +5,8 @@ namespace Omnipay\DocdataPayments;
 use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\RequestInterface;
 use Omnipay\DocdataPayments\Message\CreateRequest;
-use Omnipay\DocdataPayments\Message\FakeSuccessfulProceedRequest;
 use Omnipay\Common\AbstractGateway;
+use Omnipay\DocdataPayments\Message\OnePageCompleteAuthorizeRequest;
 
 /**
  * Docdata gateway for Omnipay - one page checkout, not webdirect.
@@ -44,6 +44,6 @@ class OnePageCheckoutGateway extends WebdirectGateway
      */
     public function completeAuthorize(array $parameters = array())
     {
-        return $this->createRequest(FakeSuccessfulProceedRequest::class, $parameters);
+        return $this->createRequest(OnePageCompleteAuthorizeRequest::class, $parameters);
     }
 }
