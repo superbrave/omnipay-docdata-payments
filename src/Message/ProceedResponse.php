@@ -28,6 +28,22 @@ class ProceedResponse extends AbstractResponse
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isCancelled()
+    {
+        if (
+            isset($this->data->proceedSuccess)
+            && $this->data->proceedSuccess->success->code === self::SUCCESS_CODE_SUCCESSFUL
+            && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess)
+            && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === self::PAYMENT_SUCCESS_STATUS_CANCELLED
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Get a reference provided by the gateway to represent the payment.
      * This is the same as the transactionReference from the createRequest.
      *
