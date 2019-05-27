@@ -4,6 +4,8 @@ namespace Omnipay\DocdataPayments\Message;
 
 class OnePageCompleteAuthorizeResponse extends StatusResponse
 {
+    const STATUSSUCCESS_CODE_SUCCESSFUL = 'SUCCESS';
+
     /**
      * {@inheritdoc}
      *
@@ -11,7 +13,7 @@ class OnePageCompleteAuthorizeResponse extends StatusResponse
      */
     public function isSuccessful(): bool
     {
-        if (!isset($this->data->statusSuccess) || $this->data->statusSuccess->success->code !== 'SUCCESS') {
+        if (!$this->hasSuccessfulStatusCode()) {
             return false;
         }
 
@@ -38,4 +40,54 @@ class OnePageCompleteAuthorizeResponse extends StatusResponse
 
         return true;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCancelled(): bool
+    {
+        if (!$this->hasSuccessfulStatusCode()) {
+            return false;
+        }
+
+        if ($this->isSuccessful()) {
+            return false;
+        }
+
+        if (!isset($this->data->statusSuccess->report->approximateTotals)) {
+            return false;
+        }
+
+        $approximateTotals = $this->data->statusSuccess->report->approximateTotals;
+
+        if (
+            $approximateTotals->totalRegistered > 0
+            && $approximateTotals->totalShopperPending === 0
+            && $approximateTotals->totalAcquirerPending === 0
+            && $approximateTotals->totalAcquirerApproved === 0
+            && $approximateTotals->totalCaptured === 0
+        ) {
+            return true;
+        }
+        return false;
+
+    }
+
+    /**
+     * Check if the request has been successfully received by docdata.
+     *
+     * @return bool
+     */
+    private function hasSuccessfulStatusCode()
+    {
+        if (
+            isset($this->data->statusSuccess)
+            && $this->data->statusSuccess->success->code === self::STATUSSUCCESS_CODE_SUCCESSFUL
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

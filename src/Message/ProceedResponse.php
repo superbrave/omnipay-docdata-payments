@@ -12,15 +12,30 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 class ProceedResponse extends AbstractResponse
 {
     /**
+     * @var string When the proceed request was successfully received by Docdata
+     */
+    const PROCEEDSUCCESS_CODE_SUCCESSFUL = 'SUCCESS';
+
+    /**
+     * @var string When the proceed request was authorized for payment
+     */
+    const PAYMENT_SUCCESS_STATUS_AUTHORIZED = 'AUTHORIZED';
+
+    /**
+     * @var string When the proceed request was cancelled (they have a typo in their api)
+     */
+    const PAYMENT_SUCCESS_STATUS_CANCELLED = 'CANCELED'; // [sic]
+
+    /**
      * {@inheritdoc}
      */
     public function isSuccessful()
     {
         if (
             isset($this->data->proceedSuccess)
-            && $this->data->proceedSuccess->success->code === 'SUCCESS'
+            && $this->data->proceedSuccess->success->code === self::PROCEEDSUCCESS_CODE_SUCCESSFUL
             && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess)
-            && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === 'AUTHORIZED'
+            && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === self::PAYMENT_SUCCESS_STATUS_AUTHORIZED
         ) {
             return true;
         }
@@ -34,7 +49,7 @@ class ProceedResponse extends AbstractResponse
     {
         if (
             isset($this->data->proceedSuccess)
-            && $this->data->proceedSuccess->success->code === self::SUCCESS_CODE_SUCCESSFUL
+            && $this->data->proceedSuccess->success->code === self::PROCEEDSUCCESS_CODE_SUCCESSFUL
             && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess)
             && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === self::PAYMENT_SUCCESS_STATUS_CANCELLED
         ) {
