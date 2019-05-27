@@ -1,7 +1,7 @@
 # omnipay-docdata-payments
 Docdata/CM Payments support for Omnipay payment processing library.
 
-This package is geared towards the Webdirect method of handling orders in Docdata Payments.
+This package is geared towards the Webdirect method of handling orders in Docdata Payments (now CM payments).
 
 
 ## Authorize data
