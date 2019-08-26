@@ -2,8 +2,8 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
+use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
-use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
  * Status Request Response
@@ -17,7 +17,7 @@ class StatusResponse extends AbstractResponse
      */
     public function getTransactionReference(): string
     {
-        /** @var AbstractRequest $this->>request */
+        /** @var AbstractRequest $this->request */
         return $this->request->getTransactionReference();
     }
 
@@ -113,7 +113,7 @@ class StatusResponse extends AbstractResponse
     }
 
     /**
-     * Has the full amount been paid and caputred?
+     * Has the full amount been paid and captured?
      *
      * @return bool
      */
@@ -125,6 +125,26 @@ class StatusResponse extends AbstractResponse
         $totalCaptured = $approximateTotals->totalCaptured;
 
         return $totalRegistered === $totalCaptured;
+    }
+
+    /**
+     * Is a chargeback performed on the most recent payment?
+     *
+     * @return bool
+     */
+    public function hasChargeback(): bool
+    {
+        if (!isset($this->data->statusSuccess->report->payment)) {
+            return false;
+        }
+
+        $payment = $this->getMostRecentPayment();
+
+        if (is_array($payment)) {
+            $payment = $payment[0];
+        }
+
+        return isset($payment->authorization->chargeback);
     }
 
     /**
