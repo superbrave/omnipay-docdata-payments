@@ -68,9 +68,6 @@ class StatusResponse extends AbstractResponse
         }
 
         $payment = $this->getMostRecentPayment();
-        if (is_array($this->data->statusSuccess->report->payment)) {
-            $payment = $payment[0];
-        }
 
         $authorizationStatus = $payment->authorization->status;
         if ($authorizationStatus === 'CANCELED') {
@@ -104,11 +101,6 @@ class StatusResponse extends AbstractResponse
 
         $payment = $this->getMostRecentPayment();
 
-        if (\is_array($payment)) {
-            $payment = $payment[0];
-        }
-
-
         return $payment->authorization->status === 'CANCELED';
     }
 
@@ -128,7 +120,7 @@ class StatusResponse extends AbstractResponse
     }
 
     /**
-     * Is a chargeback performed on the most recent payment?
+     * Is a chargeback performed on at least one of the payments?
      *
      * @return bool
      */
@@ -138,13 +130,19 @@ class StatusResponse extends AbstractResponse
             return false;
         }
 
-        $payment = $this->getMostRecentPayment();
+        $payment = $this->data->statusSuccess->report->payment;
 
-        if (is_array($payment)) {
-            $payment = $payment[0];
+        if (is_array($payment) === false) {
+            return isset($payment->authorization->chargeback);
         }
 
-        return isset($payment->authorization->chargeback);
+        foreach ($payment as $value) {
+            if (isset($value->authorization->chargeback)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
