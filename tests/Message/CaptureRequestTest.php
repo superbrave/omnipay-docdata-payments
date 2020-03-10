@@ -122,6 +122,7 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertTrue($response->isSuccessful());
+        $this->assertEquals($this->createCaptureSuccessResponse(), $response->getData());
     }
 
     /**
@@ -170,6 +171,7 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertTrue($response->isSuccessful());
+        $this->assertEquals($this->createCaptureSuccessResponse(), $response->getData());
     }
 
     /**
@@ -218,6 +220,7 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
+        $this->assertEquals($this->createCapturePaymentIdIncorrectErrorResponse(), $response->getData());
     }
 
     /**
@@ -267,6 +270,7 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
+        $this->assertEquals($this->createCapturePaymentIdIncorrectErrorResponse(), $response->getData());
     }
 
     /**
@@ -315,6 +319,7 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
+        $this->assertEquals($this->createCaptureAlreadyCapturedErrorResponse(), $response->getData());
     }
 
     /**
