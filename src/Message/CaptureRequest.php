@@ -10,6 +10,19 @@ use Omnipay\Common\Exception\InvalidRequestException;
 class CaptureRequest extends SoapAbstractRequest
 {
     /**
+     * {@inheritdoc}
+     */
+    public function getData()
+    {
+        $this->validate('transactionReference');
+
+        $data = parent::getData();
+        $data['paymentOrderKey'] = $this->getTransactionReference();
+
+        return $data;
+    }
+
+    /**
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient Configured SoapClient
@@ -22,9 +35,7 @@ class CaptureRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
-        $statusData = $data;
-        $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->__soapCall('status', [$statusData]);
+        $status = $soapClient->__soapCall('status', [$data]);
 
         $payments = $status->statusSuccess->report->payment;
 
