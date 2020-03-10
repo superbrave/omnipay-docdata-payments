@@ -2,7 +2,8 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
-use Omnipay\Common\Exception\InvalidRequestException;
+use SoapClient;
+use stdClass;
 
 /**
  * DocdataPayments Create Request
@@ -25,37 +26,32 @@ class CaptureRequest extends SoapAbstractRequest
     /**
      * Run the SOAP transaction
      *
-     * @param \SoapClient $soapClient Configured SoapClient
-     * @param array       $data       Formatted Data to be sent to Docdata
+     * @param SoapClient $soapClient Configured SoapClient
+     * @param array      $data       Formatted Data to be sent to Docdata
      *
-     * @return \stdClass
-     *
-     * @throws \SoapFault
-     * @throws InvalidRequestException
+     * @return stdClass
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
+    protected function runTransaction(SoapClient $soapClient, array $data): stdClass
     {
-        $status = $soapClient->__soapCall('status', [$data]);
+        $statusResponse = $soapClient->__soapCall('status', [$data]);
 
-        $payments = $status->statusSuccess->report->payment;
-
-        if (\is_array($payments) === false) {
-            $payments = [
-                $payments
-            ];
+        $payments = [];
+        if (isset($statusResponse->statusSuccess->report->payment)) {
+            $payments = $statusResponse->statusSuccess->report->payment;
         }
 
-        $authorizedPayments = $this->getAllAuthorizedPayments($payments);
-        if (empty($authorizedPayments)) {
-            return $this->createFakeCaptureResponseForNoValidPayments();
+        if (is_array($payments) === false) {
+            $payments = [$payments];
         }
 
-        $capturablePayment = $this->getFirstPaymentToCapture($authorizedPayments);
-        if ($capturablePayment === null) {
-            return $this->createSuccessfulCaptureResponseForAllCapturesAlreadyDone();
+        $capturePayment = $this->getPaymentAvailableForCapture($payments);
+
+        $data['paymentId'] = 0;
+        if ($capturePayment instanceof stdClass) {
+            $data['paymentId'] = $capturePayment->id;
         }
 
-        $data['paymentId'] = $capturablePayment->id;
+        unset($data['paymentOrderKey']);
 
         return $soapClient->__soapCall('capture', [$data]);
     }
@@ -73,103 +69,44 @@ class CaptureRequest extends SoapAbstractRequest
     /**
      * Check all payments to see if we have an authorized one
      *
-     * @param array $payments
+     * @param stdClass[] $payments
      *
-     * @return array
+     * @return stdClass|null
      */
-    protected function getAllAuthorizedPayments(array $payments): array
+    private function getPaymentAvailableForCapture(array $payments): ?stdClass
     {
-        $authorizedPayments = [];
+        $payment = null;
 
         foreach ($payments as $payment) {
-            if ($payment->authorization->status === 'AUTHORIZED') {
-                $authorizedPayments[] = $payment;
+            if ($this->isPaymentAuthorized($payment) && $this->isPaymentCaptured($payment) === false) {
+                return $payment;
             }
         }
-        return $authorizedPayments;
+
+        return $payment;
     }
 
     /**
-     * Check all payments to see if there is a capture that's open to capture
+     * Returns true if the payment status is 'AUTHORIZED'.
      *
-     * @param array $payments
+     * @param stdClass $payment
      *
-     * @return array|null
-     */
-    protected function getFirstPaymentToCapture(array $payments)
-    {
-        // start at the back as it's very likely the successful one is the latest.
-        $payments = array_reverse($payments);
-
-        foreach ($payments as $payment) {
-            foreach ($payment->authorization->capture as $capture) {
-                if (is_string($capture) && !$this->isUncapturableState($capture)) {
-                    return $payment;
-                }
-                if (is_array($capture)) {
-                    foreach ($capture as $row) {
-                        if (isset($row->status) && !$this->isUncapturableState($row->status)) {
-                            return $payment;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * States for captures are not defined in the docdata documentation, although some are in the wsdl,
-     * so make educated guesses from states that are documented and expand upon them.
-     *
-     * We need to know which payments to skip when trying to capture.
-     *
-     * @param string $state
      * @return bool
      */
-    private function isUncapturableState(string $state): bool
+    private function isPaymentAuthorized(stdClass $payment): bool
     {
-        if (in_array(strtoupper($state), [
-            'PAID',
-            'CAPTURED',
-            'COMPLETE',
-            'COMPLETED',
-        ])) {
-            return true;
-        }
-        return false;
+        return $payment->authorization->status === 'AUTHORIZED';
     }
 
     /**
-     * Create a stdClass that mimics a failed soap call to docdata, to be used instead of an exception
+     * Returns true if the payment has one or more captures.
      *
-     * @return \stdClass
-     */
-    private function createFakeCaptureResponseForNoValidPayments()
-    {
-        $response = new \stdClass();
-        $response->captureErrors = new \stdClass();
-        $response->captureErrors->error = new \stdClass();
-        $response->captureErrors->error->_ = 'No capture executed because there were no valid payments';
-
-        return $response;
-    }
-
-    /**
-     * Create a stdClass that mimics a successful soap call to docdata.
-     * This is used when there were no (authorized) payments to capture.
-     * This occurs when a capture gets called on iDeal for instance.
+     * @param stdClass $payment
      *
-     * @return \stdClass
+     * @return bool
      */
-    private function createSuccessfulCaptureResponseForAllCapturesAlreadyDone()
+    private function isPaymentCaptured(stdClass $payment): bool
     {
-        $response = new \stdClass();
-        $response->captureSuccess = new \stdClass();
-        $response->captureSuccess->success = new \stdClass();
-        $response->captureSuccess->success->_ = 'All captures were already captured so no action was taken.';
-        $response->captureSuccess->success->code = 'SUCCESS';
-
-        return $response;
+        return isset($payment->authorization->capture);
     }
 }
