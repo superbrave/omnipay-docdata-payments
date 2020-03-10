@@ -53,7 +53,9 @@ class CaptureRequest extends SoapAbstractRequest
 
         unset($data['paymentOrderKey']);
 
-        return $soapClient->__soapCall('capture', [$data]);
+        $captureResponse = $soapClient->__soapCall('capture', [$data]);
+
+        return $this->mergeResponses($statusResponse, $captureResponse);
     }
 
     /**
@@ -108,5 +110,25 @@ class CaptureRequest extends SoapAbstractRequest
     private function isPaymentCaptured(stdClass $payment): bool
     {
         return isset($payment->authorization->capture);
+    }
+
+    /**
+     * Returns an stdClass with the multiple responses.
+     *
+     * @param stdClass ...$responses
+     *
+     * @return stdClass
+     */
+    private function mergeResponses(stdClass ...$responses): stdClass
+    {
+        $mergedResponse = new stdClass();
+        foreach ($responses as $response) {
+            $properties = get_object_vars($response);
+            foreach ($properties as $propertyKey => $propertyValue) {
+                $mergedResponse->{$propertyKey} = $propertyValue;
+            }
+        }
+
+        return $mergedResponse;
     }
 }

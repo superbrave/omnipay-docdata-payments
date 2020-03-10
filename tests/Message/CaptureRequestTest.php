@@ -122,7 +122,11 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertTrue($response->isSuccessful());
-        $this->assertEquals($this->createCaptureSuccessResponse(), $response->getData());
+
+        $expectedData = $this->createCaptureSuccessResponse();
+        $expectedData->statusSuccess = $this->createStatusSuccessResponse()->statusSuccess;
+
+        $this->assertEquals($expectedData, $response->getData());
     }
 
     /**
@@ -171,7 +175,11 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertTrue($response->isSuccessful());
-        $this->assertEquals($this->createCaptureSuccessResponse(), $response->getData());
+
+        $expectedData = $this->createCaptureSuccessResponse();
+        $expectedData->statusSuccess = $this->createStatusSuccessResponseWithMultiplePayments()->statusSuccess;
+
+        $this->assertEquals($expectedData, $response->getData());
     }
 
     /**
@@ -220,7 +228,11 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
-        $this->assertEquals($this->createCapturePaymentIdIncorrectErrorResponse(), $response->getData());
+
+        $expectedData = $this->createCapturePaymentIdIncorrectErrorResponse();
+        $expectedData->statusErrors = $this->createStatusErrorResponse()->statusErrors;
+
+        $this->assertEquals($expectedData, $response->getData());
     }
 
     /**
@@ -270,7 +282,11 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
-        $this->assertEquals($this->createCapturePaymentIdIncorrectErrorResponse(), $response->getData());
+
+        $expectedData = $this->createCapturePaymentIdIncorrectErrorResponse();
+        $expectedData->statusSuccess = $this->createStatusSuccessResponse()->statusSuccess;
+
+        $this->assertEquals($expectedData, $response->getData());
     }
 
     /**
@@ -319,7 +335,11 @@ class CaptureRequestTest extends TestCase
         $response = $this->request->send();
 
         $this->assertFalse($response->isSuccessful());
-        $this->assertEquals($this->createCaptureAlreadyCapturedErrorResponse(), $response->getData());
+
+        $expectedData = $this->createCaptureAlreadyCapturedErrorResponse();
+        $expectedData->statusSuccess = $this->createStatusSuccessResponseWithAlreadyCapturedPayment()->statusSuccess;
+
+        $this->assertEquals($expectedData, $response->getData());
     }
 
     /**
