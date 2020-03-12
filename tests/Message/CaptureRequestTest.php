@@ -22,7 +22,7 @@ class CaptureRequestTest extends TestCase
     private $request;
 
     /**
-     * @var MockObject
+     * @var MockObject|SoapClient
      */
     private $soapClientMock;
 
