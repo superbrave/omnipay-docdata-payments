@@ -69,7 +69,11 @@ class CaptureRequest extends SoapAbstractRequest
     }
 
     /**
-     * Check all payments to see if we have an authorized one
+     * Returns the first payment available for capturing. When all payments are captured, the last payment is returned.
+     * This will result in an "already captured" error from the payment service provider.
+     *
+     * When no payments are available, null will be returned. This will result in an "invalid payment id" error from
+     * the payment service provider.
      *
      * @param stdClass[] $payments
      *
