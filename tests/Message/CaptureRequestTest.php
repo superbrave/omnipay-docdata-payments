@@ -237,13 +237,12 @@ class CaptureRequestTest extends TestCase
 
     /**
      * Tests if {@see CaptureRequest::send} returns an unsuccessful {@see CaptureResponse} when trying to capture
-     * an already captured payment.
+     * an incorrect payment ID.
      *
      * @depends testSendSuccessfulCapture
      */
     public function testSendNotSuccessfulCaptureWhenPaymentIdIncorrect(): void
     {
-        $this->markTestIncomplete();
         $this->soapClientMock->expects($this->exactly(2))
             ->method('__soapCall')
             ->withConsecutive(
