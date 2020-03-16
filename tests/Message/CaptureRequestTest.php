@@ -289,12 +289,12 @@ class CaptureRequestTest extends TestCase
     }
 
     /**
-     * Tests if {@see CaptureRequest::send} returns an unsuccessful {@see CaptureResponse} when trying to capture
+     * Tests if {@see CaptureRequest::send} returns a successful {@see CaptureResponse} when trying to capture
      * an already captured payment.
      *
      * @depends testSendSuccessfulCapture
      */
-    public function testSendNotSuccessfulCaptureWhenAlreadyCaptured(): void
+    public function testSendSuccessfulCaptureWhenAlreadyCaptured(): void
     {
         $this->soapClientMock->expects($this->exactly(2))
             ->method('__soapCall')
@@ -333,9 +333,14 @@ class CaptureRequestTest extends TestCase
 
         $response = $this->request->send();
 
-        $this->assertFalse($response->isSuccessful());
+        $this->assertTrue($response->isSuccessful());
+        $this->assertSame('No amount authorized available to capture.', $response->getMessage());
 
         $expectedData = $this->createCaptureAlreadyCapturedErrorResponse();
+        $expectedData->captureSuccess = new stdClass();
+        $expectedData->captureSuccess->success = new stdClass();
+        $expectedData->captureSuccess->success->code = 'SUCCESS';
+        $expectedData->captureSuccess->success->_ = 'No amount authorized available to capture.';
         $expectedData->statusSuccess = $this->createStatusSuccessResponseWithAlreadyCapturedPayment()->statusSuccess;
 
         $this->assertEquals($expectedData, $response->getData());
