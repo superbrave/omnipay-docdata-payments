@@ -54,6 +54,7 @@ class CaptureRequest extends SoapAbstractRequest
         unset($data['paymentOrderKey']);
 
         $captureResponse = $soapClient->__soapCall('capture', [$data]);
+        $this->modifyCaptureResponseToSuccessfulWhenAlreadyCaptured($captureResponse, $statusResponse);
 
         return $this->mergeResponses($statusResponse, $captureResponse);
     }
@@ -114,6 +115,38 @@ class CaptureRequest extends SoapAbstractRequest
     private function isPaymentCaptured(stdClass $payment): bool
     {
         return isset($payment->authorization->capture);
+    }
+
+    /**
+     * Modifies a erroneous capture response to successful when the payments are already captured.
+     *
+     * This is required to facilitate the same workflow for both directly captured payment methods (like iDeal)
+     * and delayed captured payment methods (like ELV).
+     *
+     * @param stdClass $captureResponse
+     * @param stdClass $statusResponse
+     */
+    private function modifyCaptureResponseToSuccessfulWhenAlreadyCaptured(
+        stdClass $captureResponse,
+        stdClass $statusResponse
+    ): void {
+        if (isset($captureResponse->captureSuccess)) {
+            return;
+        }
+
+        if (isset($statusResponse->statusSuccess) === false) {
+            return;
+        }
+
+        $statusResponseApproximateTotals = $statusResponse->statusSuccess->report->approximateTotals;
+        if ($statusResponseApproximateTotals->totalRegistered !== $statusResponseApproximateTotals->totalCaptured) {
+            return;
+        }
+
+        $captureResponse->captureSuccess = new stdClass();
+        $captureResponse->captureSuccess->success = new stdClass();
+        $captureResponse->captureSuccess->success->code = 'SUCCESS';
+        $captureResponse->captureSuccess->success->_ = $captureResponse->captureErrors->error->_;
     }
 
     /**
