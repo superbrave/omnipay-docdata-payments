@@ -22,39 +22,16 @@ class StatusResponse extends AbstractResponse
     }
 
     /**
-     * Is payment authorized successfully?
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isSuccessful(): bool
     {
-        if (!isset($this->data->statusSuccess) || $this->data->statusSuccess->success->code !== 'SUCCESS') {
-            return false;
-        }
-
-        $statusSuccess = $this->data->statusSuccess;
-
-        if (!isset($statusSuccess->report->payment)) {
-            return false;
-        }
-        $payment = $this->getMostRecentPayment();
-
-        if ($payment->authorization->status !== 'AUTHORIZED') {
-            return false;
-        }
-
-        if ($payment->paymentMethod === 'BANK_TRANSFER') {
-            $approximateTotals = $statusSuccess->report->approximateTotals;
-
-            $totalRegistered = $approximateTotals->totalRegistered;
-            $totalCaptured = $approximateTotals->totalCaptured;
-
-            return $totalRegistered === $totalCaptured;
-        }
+        return isset($this->data->statusSuccess->success->code)
+            && $this->data->statusSuccess->success->code === 'SUCCESS';
 
         return true;
     }
-    
+
     /**
      * Is the response successful?
      *
@@ -90,7 +67,7 @@ class StatusResponse extends AbstractResponse
 
         return true;
     }
-    
+
     /**
      * Is the transaction cancelled by the user?
      *
