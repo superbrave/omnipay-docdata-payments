@@ -24,6 +24,19 @@ class ProceedRequest extends SoapAbstractRequest
     protected $authorizationResult = [];
 
     /**
+     * {@inheritdoc}
+     */
+    public function getData()
+    {
+        $this->validate('transactionReference');
+
+        $data = parent::getData();
+        $data['paymentOrderKey'] = $this->getTransactionReference();
+
+        return $data;
+    }
+
+    /**
      * Run the SOAP transaction
      *
      * @param \SoapClient $soapClient Configured SoapClient
@@ -35,24 +48,21 @@ class ProceedRequest extends SoapAbstractRequest
      */
     protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
     {
-        // We only have the paymentOrderKey / Transaction Reference, and not the paymentId.
-        // Use a STATUS request to get the reference, to be used in the proceed request.
-        $statusData = $data;
-        $statusData['paymentOrderKey'] = $this->getTransactionReference();
-        $status = $soapClient->__soapCall('status', [$statusData]);
+        $statusResponse = $soapClient->__soapCall('status', [$data]);
 
-        $payments = $status->statusSuccess->report->payment;
+        $payments = [];
+        if (isset($statusResponse->statusSuccess->report->payment)) {
+            $payments = $statusResponse->statusSuccess->report->payment;
+        }
 
-        if (\is_array($payments) === false) {
-            $payments = [
-                $payments
-            ];
+        if (is_array($payments) === false) {
+            $payments = [$payments];
         }
 
         $lastProceedResult = null;
         $authorizedPayments = [];
 
-        foreach($payments as $payment) {
+        foreach ($payments as $payment) {
             if (isset($payment->authorization->reversal)) {
                 continue;
             }
@@ -63,7 +73,7 @@ class ProceedRequest extends SoapAbstractRequest
                 case 'REDIRECTED_FOR_AUTHENTICATION':
                 case 'AUTHORIZATION_REQUESTED':
                 case 'RISK_CHECK_OK':
-                    // we can proceed
+                    unset($data['paymentOrderKey']);
                     $data['paymentId'] = $payment->id;
     
                     if (!empty($this->getAuthorizationResultType())) {
