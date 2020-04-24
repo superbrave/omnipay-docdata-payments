@@ -45,13 +45,7 @@ class ProceedRequest extends SoapAbstractRequest
         }
 
         $lastProceedResponse = null;
-        $authorizedPayments = [];
-
         foreach ($payments as $payment) {
-            if (isset($payment->authorization->reversal)) {
-                continue;
-            }
-
             // try to 'proceed' every payment that has a valid state.
             // states are, however, badly documented.
             switch($payment->authorization->status) {
@@ -66,21 +60,6 @@ class ProceedRequest extends SoapAbstractRequest
                     // we can't return here because there might be multiple payments that need to proceed
                     $lastProceedResponse = $soapClient->__soapCall('proceed', [$data]);
                     break;
-                case 'AUTHORIZED':
-                    if (
-                        isset($payment->authorization->capture->status)
-                        && $payment->authorization->capture->status === 'STARTED'
-                    ) {
-                        $authorizedPayments[] = $payment;
-                    }
-                    break;
-            }
-        }
-
-        if ($lastProceedResponse === null) {
-            if (!empty($authorizedPayments)) {
-                // bank transfer. Promise to pay, but no money yet.
-                return $this->createSuccessfulProceedResponseForValidPaymentsButNothingToDo();
             }
         }
 
@@ -151,26 +130,5 @@ class ProceedRequest extends SoapAbstractRequest
     public function setAuthorizationResult(array $authorizationResult)
     {
         return $this->setParameter('authorizationResult', $authorizationResult);
-    }
-
-    /**
-     * Create a stdClass that mimics a successful soap call to docdata.
-     * This is used when there were no (authorized) payments to proceed.
-     * This occurs when a user chooses bank transfer.
-     *
-     * @return stdClass
-     */
-    protected function createSuccessfulProceedResponseForValidPaymentsButNothingToDo()
-    {
-        $response = new stdClass();
-        $response->proceedSuccess = new stdClass();
-        $response->proceedSuccess->success = new stdClass();
-        $response->proceedSuccess->success->_ = 'All payments were already processed so no action was taken.';
-        $response->proceedSuccess->success->code = 'SUCCESS';
-        $response->proceedSuccess->paymentResponse = new stdClass();
-        $response->proceedSuccess->paymentResponse->paymentSuccess = new stdClass();
-        $response->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
-
-        return $response;
     }
 }
