@@ -46,21 +46,28 @@ class ProceedRequest extends SoapAbstractRequest
 
         $lastProceedResponse = new stdClass();
         foreach ($payments as $payment) {
-            // try to 'proceed' every payment that has a valid state.
-            // states are, however, badly documented.
-            switch($payment->authorization->status) {
-                case 'REDIRECTED_FOR_AUTHORIZATION':
-                case 'AUTHORIZATION_REQUESTED':
-                case 'RISK_CHECK_OK':
-                    unset($data['paymentOrderKey']);
-
-                    $data['paymentId'] = $payment->id;
-                    $data[$this->getAuthorizationResultType()] = $this->getAuthorizationResult();
-
-                    // we can't return here because there might be multiple payments that need to proceed
-                    $lastProceedResponse = $soapClient->__soapCall('proceed', [$data]);
-                    break;
+            if (isset($payment->authorization->capture)) {
+                continue;
             }
+
+            if (isset($payment->authorization->refund)) {
+                continue;
+            }
+
+            if (isset($payment->authorization->chargeback)) {
+                continue;
+            }
+
+            if (isset($payment->authorization->reversal)) {
+                continue;
+            }
+
+            unset($data['paymentOrderKey']);
+
+            $data['paymentId'] = $payment->id;
+            $data[$this->getAuthorizationResultType()] = $this->getAuthorizationResult();
+
+            $lastProceedResponse = $soapClient->__soapCall('proceed', [$data]);
         }
 
         $this->modifyProceedResponseToSuccessfulWhenPaymentAlreadyAcquirerApproved(
