@@ -2,9 +2,13 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
+use Exception;
 use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\AbstractRequest as OmnipayAbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
+use SoapClient;
+use SoapFault;
+use stdClass;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Omnipay\Common\Exception\InvalidRequestException;
 
@@ -43,7 +47,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     protected $liveEndpoint = 'https://secure.docdatapayments.com/ps/services/paymentservice/1_3?wsdl';
 
     /**
-     * @var \SoapClient
+     * @var SoapClient
      */
     protected $soapClient;
 
@@ -73,15 +77,15 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * Create a new Request
      *
-     * @param ClientInterface  $httpClient  A Guzzle client to make API calls with
-     * @param HttpRequest      $httpRequest A Symfony HTTP request object
-     * @param \SoapClient|null $soapClient  Configured SoapClient; If null, a new
-     *                                      one will be created with default values
+     * @param ClientInterface $httpClient  A Guzzle client to make API calls with
+     * @param HttpRequest     $httpRequest A Symfony HTTP request object
+     * @param SoapClient|null $soapClient  Configured SoapClient; If null, a new
+     *                                     one will be created with default values
      */
     public function __construct(
         ClientInterface $httpClient,
         HttpRequest $httpRequest,
-        \SoapClient $soapClient = null
+        SoapClient $soapClient = null
     ) {
         parent::__construct($httpClient, $httpRequest);
 
@@ -276,7 +280,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
         }
         return $this->getParameter('transactionId');
     }
-    
+
     /**
      * Get the request pending URL.
      *
@@ -286,7 +290,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     {
         return $this->getParameter('pendingUrl');
     }
-    
+
     /**
      * Sets the request return URL.
      *
@@ -330,11 +334,11 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
     /**
      * Build the SOAP Client and the internal request object
      *
-     * @return \SoapClient
+     * @return SoapClient
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function buildSoapClient(): \SoapClient
+    public function buildSoapClient(): SoapClient
     {
         if ($this->soapClient !== null) {
             return $this->soapClient;
@@ -368,7 +372,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
             $soap_options['cache_wsdl'] = WSDL_CACHE_BOTH;
         }
 
-        $this->soapClient = new \SoapClient($this->getEndpoint(), $soap_options);
+        $this->soapClient = new SoapClient($this->getEndpoint(), $soap_options);
 
         return $this->soapClient;
     }
@@ -378,17 +382,17 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * Over-ride this in sub classes.
      *
-     * @param \SoapClient $soapClient Configured SoapClient
-     * @param array       $data       All data to be sent in the transaction
+     * @param SoapClient $soapClient Configured SoapClient
+     * @param array      $data       All data to be sent in the transaction
      *
-     * @return \stdClass
+     * @return stdClass
      *
-     * @throws \SoapFault
+     * @throws SoapFault
      */
     abstract protected function runTransaction(
-        \SoapClient $soapClient,
+        SoapClient $soapClient,
         array $data
-    ): \stdClass;
+    ): stdClass;
 
     /**
      * Send Data to the Gateway
@@ -397,7 +401,7 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      *
      * @return ResponseInterface
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function sendData($data)
     {
@@ -428,4 +432,24 @@ abstract class SoapAbstractRequest extends OmnipayAbstractRequest
      * @return string
      */
     abstract protected function getResponseName(): string;
+
+    /**
+     * Returns an stdClass with the multiple responses.
+     *
+     * @param stdClass ...$responses
+     *
+     * @return stdClass
+     */
+    protected function mergeResponses(stdClass ...$responses): stdClass
+    {
+        $mergedResponse = new stdClass();
+        foreach ($responses as $response) {
+            $properties = get_object_vars($response);
+            foreach ($properties as $propertyKey => $propertyValue) {
+                $mergedResponse->{$propertyKey} = $propertyValue;
+            }
+        }
+
+        return $mergedResponse;
+    }
 }
