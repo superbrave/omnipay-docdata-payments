@@ -44,7 +44,7 @@ class ProceedRequest extends SoapAbstractRequest
             $payments = [$payments];
         }
 
-        $lastProceedResponse = null;
+        $lastProceedResponse = new stdClass();
         foreach ($payments as $payment) {
             // try to 'proceed' every payment that has a valid state.
             // states are, however, badly documented.
@@ -65,7 +65,7 @@ class ProceedRequest extends SoapAbstractRequest
 
         // Even if we were to have multiple payments, the last one should be the most relevant
         // and should have the result returned.
-        return $lastProceedResponse;
+        return $this->mergeResponses($statusResponse, $lastProceedResponse);
     }
 
     /**
