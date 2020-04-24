@@ -155,22 +155,6 @@ class ProceedRequest extends SoapAbstractRequest
     }
 
     /**
-     * @return bool
-     */
-    public function getSkipProceedRequest(): bool
-    {
-        return $this->skipProceedRequest;
-    }
-
-    /**
-     * @param bool $skipProceedRequest
-     */
-    public function setSkipProceedRequest(bool $skipProceedRequest)
-    {
-        $this->skipProceedRequest = $skipProceedRequest;
-    }
-
-    /**
      * Create a stdClass that mimics a successful soap call to docdata.
      * This is used when there were no (authorized) payments to proceed.
      * This occurs when a user chooses bank transfer.
