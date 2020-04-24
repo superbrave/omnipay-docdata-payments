@@ -63,8 +63,11 @@ class ProceedRequest extends SoapAbstractRequest
             }
         }
 
-        // Even if we were to have multiple payments, the last one should be the most relevant
-        // and should have the result returned.
+        $this->modifyProceedResponseToSuccessfulWhenPaymentAlreadyAcquirerApproved(
+            $lastProceedResponse,
+            $statusResponse
+        );
+
         return $this->mergeResponses($statusResponse, $lastProceedResponse);
     }
 
@@ -130,5 +133,33 @@ class ProceedRequest extends SoapAbstractRequest
     public function setAuthorizationResult(array $authorizationResult)
     {
         return $this->setParameter('authorizationResult', $authorizationResult);
+    }
+
+    /**
+     * Modifies the last proceed response to successful when the payments are already acquirer approved.
+     *
+     * @param stdClass $lastProceedResponse
+     * @param stdClass $statusResponse
+     */
+    private function modifyProceedResponseToSuccessfulWhenPaymentAlreadyAcquirerApproved(
+        stdClass $lastProceedResponse,
+        stdClass $statusResponse
+    ): void {
+        if (isset($statusResponse->statusSuccess) === false) {
+            return;
+        }
+
+        $statusResponseApproximateTotals = $statusResponse->statusSuccess->report->approximateTotals;
+        if ($statusResponseApproximateTotals->totalRegistered !== $statusResponseApproximateTotals->totalAcquirerApproved) {
+            return;
+        }
+
+        $lastProceedResponse->proceedSuccess = new stdClass();
+        $lastProceedResponse->proceedSuccess->success = new stdClass();
+        $lastProceedResponse->proceedSuccess->success->_ = 'All payments already acquirer approved.';
+        $lastProceedResponse->proceedSuccess->success->code = 'SUCCESS';
+        $lastProceedResponse->proceedSuccess->paymentResponse = new stdClass();
+        $lastProceedResponse->proceedSuccess->paymentResponse->paymentSuccess = new stdClass();
+        $lastProceedResponse->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
     }
 }
