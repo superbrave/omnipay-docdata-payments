@@ -59,7 +59,7 @@ class ProceedRequest extends SoapAbstractRequest
             $payments = [$payments];
         }
 
-        $lastProceedResult = null;
+        $lastProceedResponse = null;
         $authorizedPayments = [];
 
         foreach ($payments as $payment) {
@@ -81,7 +81,7 @@ class ProceedRequest extends SoapAbstractRequest
                     }
 
                     // we can't return here because there might be multiple payments that need to proceed
-                    $lastProceedResult = $soapClient->__soapCall('proceed', [$data]);
+                    $lastProceedResponse = $soapClient->__soapCall('proceed', [$data]);
                     break;
                 case 'AUTHORIZED':
                     if (
@@ -94,7 +94,7 @@ class ProceedRequest extends SoapAbstractRequest
             }
         }
 
-        if ($lastProceedResult === null) {
+        if ($lastProceedResponse === null) {
             if (!empty($this->getAuthorizationResultType())) {
                 // we should have proceeded but we can't
                 return $this->createFakeProceedErrorResponseForNoValidPayments();
@@ -105,9 +105,10 @@ class ProceedRequest extends SoapAbstractRequest
                 return $this->createSuccessfulProceedResponseForValidPaymentsButNothingToDo();
             }
         }
+
         // Even if we were to have multiple payments, the last one should be the most relevant
         // and should have the result returned.
-        return $lastProceedResult;
+        return $lastProceedResponse;
     }
 
     /**
