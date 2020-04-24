@@ -11,27 +11,11 @@ use stdClass;
 class ProceedRequest extends SoapAbstractRequest
 {
     /**
-     * Name of the authorizationResult for the PROCEED request.
-     * E.g. iDealAuthorizationResult , belfiusAuthorizationResult.
-     *
-     * @see https://test.docdatapayments.com/ps/orderapi-1_3.wsdl #part 5. Proceed
-     * @var string
-     */
-    protected $authorizationResultType;
-
-    /**
-     * The actual values needed to be sent with every supported payment method
-     *
-     * @var array
-     */
-    protected $authorizationResult = [];
-
-    /**
      * {@inheritdoc}
      */
     public function getData()
     {
-        $this->validate('transactionReference');
+        $this->validate('transactionReference', 'authorizationResultType');
 
         $data = parent::getData();
         $data['paymentOrderKey'] = $this->getTransactionReference();
@@ -75,11 +59,9 @@ class ProceedRequest extends SoapAbstractRequest
                 case 'AUTHORIZATION_REQUESTED':
                 case 'RISK_CHECK_OK':
                     unset($data['paymentOrderKey']);
-                    $data['paymentId'] = $payment->id;
 
-                    if (!empty($this->getAuthorizationResultType())) {
-                        $data[$this->getAuthorizationResultType()] = $this->getAuthorizationResult();
-                    }
+                    $data['paymentId'] = $payment->id;
+                    $data[$this->getAuthorizationResultType()] = $this->getAuthorizationResult();
 
                     // we can't return here because there might be multiple payments that need to proceed
                     $lastProceedResponse = $soapClient->__soapCall('proceed', [$data]);
@@ -96,11 +78,6 @@ class ProceedRequest extends SoapAbstractRequest
         }
 
         if ($lastProceedResponse === null) {
-            if (!empty($this->getAuthorizationResultType())) {
-                // we should have proceeded but we can't
-                return $this->createFakeProceedErrorResponseForNoValidPayments();
-            }
-
             if (!empty($authorizedPayments)) {
                 // bank transfer. Promise to pay, but no money yet.
                 return $this->createSuccessfulProceedResponseForValidPaymentsButNothingToDo();
@@ -123,35 +100,57 @@ class ProceedRequest extends SoapAbstractRequest
     }
 
     /**
-     * @return string|null
+     * Returns the name of the authorizationResult for the proceed request.
+     *
+     * @return string
      */
     public function getAuthorizationResultType()
     {
-        return $this->authorizationResultType;
+        return $this->getParameter('authorizationResultType');
     }
 
     /**
+     * Sets the name of the authorization result for the proceed request.
+     * (eg. iDealAuthorizationResult, belfiusAuthorizationResult)
+     *
+     * @see https://test.docdatapayments.com/ps/orderapi-1_3.wsdl #part 5. Proceed
+     *
      * @param string $authorizationResultType
+     *
+     * @return $this
      */
     public function setAuthorizationResultType(string $authorizationResultType)
     {
-        $this->authorizationResultType = $authorizationResultType;
+        return $this->setParameter('authorizationResultType', $authorizationResultType);
     }
 
     /**
-     * @return string
+     * Returns the authorization result for the proceed request.
+     *
+     * @return array
      */
     public function getAuthorizationResult(): array
     {
-        return $this->authorizationResult;
+        $authorizationResult = $this->getParameter('authorizationResult');
+        if ($authorizationResult === null) {
+            $authorizationResult = [];
+        }
+
+        return $authorizationResult;
     }
 
     /**
-     * @param string $authorizationResult
+     * Sets the authorization result for the proceed request.
+     *
+     * @see https://test.docdatapayments.com/ps/orderapi-1_3.wsdl #part 5. Proceed
+     *
+     * @param array $authorizationResult
+     *
+     * @return $this
      */
     public function setAuthorizationResult(array $authorizationResult)
     {
-        $this->authorizationResult = $authorizationResult;
+        return $this->setParameter('authorizationResult', $authorizationResult);
     }
 
     /**
@@ -171,21 +170,6 @@ class ProceedRequest extends SoapAbstractRequest
         $response->proceedSuccess->paymentResponse = new stdClass();
         $response->proceedSuccess->paymentResponse->paymentSuccess = new stdClass();
         $response->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
-
-        return $response;
-    }
-
-    /**
-     * Create a stdClass that mimics a failed soap call to docdata, to be used instead of an exception
-     *
-     * @return stdClass
-     */
-    private function createFakeProceedErrorResponseForNoValidPayments()
-    {
-        $response = new stdClass();
-        $response->proceedErrors = new stdClass();
-        $response->proceedErrors->error = new stdClass();
-        $response->proceedErrors->error->_ = 'No Proceed executed because there were no valid payments';
 
         return $response;
     }
