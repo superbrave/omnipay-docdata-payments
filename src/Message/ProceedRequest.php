@@ -2,6 +2,9 @@
 
 namespace Omnipay\DocdataPayments\Message;
 
+use SoapClient;
+use stdClass;
+
 /**
  * DocdataPayments Proceed Request, to 'pay' without interaction from the user
  */
@@ -39,14 +42,12 @@ class ProceedRequest extends SoapAbstractRequest
     /**
      * Run the SOAP transaction
      *
-     * @param \SoapClient $soapClient Configured SoapClient
-     * @param array       $data       Formatted data to be sent to Docdata
+     * @param SoapClient $soapClient Configured SoapClient
+     * @param array      $data       Formatted data to be sent to Docdata
      *
-     * @return \stdClass
-     *
-     * @throws \SoapFault
+     * @return stdClass
      */
-    protected function runTransaction(\SoapClient $soapClient, array $data): \stdClass
+    protected function runTransaction(SoapClient $soapClient, array $data): stdClass
     {
         $statusResponse = $soapClient->__soapCall('status', [$data]);
 
@@ -174,17 +175,17 @@ class ProceedRequest extends SoapAbstractRequest
      * This is used when there were no (authorized) payments to proceed.
      * This occurs when a user chooses bank transfer.
      *
-     * @return \stdClass
+     * @return stdClass
      */
     protected function createSuccessfulProceedResponseForValidPaymentsButNothingToDo()
     {
-        $response = new \stdClass();
-        $response->proceedSuccess = new \stdClass();
-        $response->proceedSuccess->success = new \stdClass();
+        $response = new stdClass();
+        $response->proceedSuccess = new stdClass();
+        $response->proceedSuccess->success = new stdClass();
         $response->proceedSuccess->success->_ = 'All payments were already processed so no action was taken.';
         $response->proceedSuccess->success->code = 'SUCCESS';
-        $response->proceedSuccess->paymentResponse = new \stdClass();
-        $response->proceedSuccess->paymentResponse->paymentSuccess = new \stdClass();
+        $response->proceedSuccess->paymentResponse = new stdClass();
+        $response->proceedSuccess->paymentResponse->paymentSuccess = new stdClass();
         $response->proceedSuccess->paymentResponse->paymentSuccess->status = 'AUTHORIZED';
 
         return $response;
@@ -193,13 +194,13 @@ class ProceedRequest extends SoapAbstractRequest
     /**
      * Create a stdClass that mimics a failed soap call to docdata, to be used instead of an exception
      *
-     * @return \stdClass
+     * @return stdClass
      */
     private function createFakeProceedErrorResponseForNoValidPayments()
     {
-        $response = new \stdClass();
-        $response->proceedErrors = new \stdClass();
-        $response->proceedErrors->error = new \stdClass();
+        $response = new stdClass();
+        $response->proceedErrors = new stdClass();
+        $response->proceedErrors->error = new stdClass();
         $response->proceedErrors->error->_ = 'No Proceed executed because there were no valid payments';
 
         return $response;
