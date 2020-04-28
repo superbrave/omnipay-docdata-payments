@@ -7,7 +7,7 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Cancel Request Response
+ * Proceed Request Response
  */
 class ProceedResponse extends AbstractResponse
 {
@@ -22,9 +22,9 @@ class ProceedResponse extends AbstractResponse
     const PAYMENT_SUCCESS_STATUS_AUTHORIZED = 'AUTHORIZED';
 
     /**
-     * @var string When the proceed request was cancelled (they have a typo in their api)
+     * @var string When the proceed request was cancelled
      */
-    const PAYMENT_SUCCESS_STATUS_CANCELLED = 'CANCELED'; // [sic]
+    const PAYMENT_SUCCESS_STATUS_CANCELLED = 'CANCELED';
 
     /**
      * {@inheritdoc}
@@ -32,41 +32,39 @@ class ProceedResponse extends AbstractResponse
     public function isSuccessful()
     {
         if (
-            isset($this->data->proceedSuccess)
+            isset($this->data->proceedSuccess->success->code)
             && $this->data->proceedSuccess->success->code === self::PROCEEDSUCCESS_CODE_SUCCESSFUL
-            && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess)
+            && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess->status)
             && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === self::PAYMENT_SUCCESS_STATUS_AUTHORIZED
         ) {
             return true;
         }
+
         return false;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function isCancelled()
     {
         if (
-            isset($this->data->proceedSuccess)
+            isset($this->data->proceedSuccess->success->code)
             && $this->data->proceedSuccess->success->code === self::PROCEEDSUCCESS_CODE_SUCCESSFUL
-            && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess)
+            && isset($this->data->proceedSuccess->paymentResponse->paymentSuccess->status)
             && $this->data->proceedSuccess->paymentResponse->paymentSuccess->status === self::PAYMENT_SUCCESS_STATUS_CANCELLED
         ) {
             return true;
         }
+
         return false;
     }
 
     /**
-     * Get a reference provided by the gateway to represent the payment.
-     * This is the same as the transactionReference from the createRequest.
-     *
-     * @return null|string
+     * {@inheritdoc}
      */
     public function getTransactionReference()
     {
-        /** @var AbstractRequest $this->>request */
         return $this->request->getTransactionReference();
     }
 }

@@ -148,24 +148,4 @@ class CaptureRequest extends SoapAbstractRequest
         $captureResponse->captureSuccess->success->code = 'SUCCESS';
         $captureResponse->captureSuccess->success->_ = $captureResponse->captureErrors->error->_;
     }
-
-    /**
-     * Returns an stdClass with the multiple responses.
-     *
-     * @param stdClass ...$responses
-     *
-     * @return stdClass
-     */
-    private function mergeResponses(stdClass ...$responses): stdClass
-    {
-        $mergedResponse = new stdClass();
-        foreach ($responses as $response) {
-            $properties = get_object_vars($response);
-            foreach ($properties as $propertyKey => $propertyValue) {
-                $mergedResponse->{$propertyKey} = $propertyValue;
-            }
-        }
-
-        return $mergedResponse;
-    }
 }
